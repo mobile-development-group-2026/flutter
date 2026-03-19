@@ -11,9 +11,9 @@ class LandlordListingPage extends StatelessWidget {
   final String landlordId;
 
   const LandlordListingPage({
-    Key? key,
+    super.key,
     required this.landlordId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

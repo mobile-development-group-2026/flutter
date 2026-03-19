@@ -10,7 +10,7 @@ class SelectionChipWidget extends StatelessWidget {
   final Color? unselectedTextColor;
 
   const SelectionChipWidget({
-    Key? key,
+    super.key,
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -18,7 +18,7 @@ class SelectionChipWidget extends StatelessWidget {
     this.selectedTextColor,
     this.unselectedColor,
     this.unselectedTextColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

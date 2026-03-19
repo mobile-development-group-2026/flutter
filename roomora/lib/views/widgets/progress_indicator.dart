@@ -5,10 +5,10 @@ class ProgressIndicatorWidget extends StatelessWidget {
   final int totalSteps;
 
   const ProgressIndicatorWidget({
-    Key? key,
+    super.key,
     required this.currentStep,
     this.totalSteps = 3,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

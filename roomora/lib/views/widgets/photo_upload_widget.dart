@@ -8,13 +8,13 @@ class PhotoUploadWidget extends StatelessWidget {
   final Function(String) onSetCover;
 
   const PhotoUploadWidget({
-    Key? key,
+    super.key,
     required this.photos,
     required this.coverPhoto,
     required this.onAddPhoto,
     required this.onRemovePhoto,
     required this.onSetCover,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +23,10 @@ class PhotoUploadWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
+            const Text(
               'PHOTOS',
               style: TextStyle(
-                color: const Color(0xFF6E7681),
+                color: Color(0xFF6E7681),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
@@ -87,19 +87,19 @@ class PhotoUploadWidget extends StatelessWidget {
               color: const Color(0xFF6E7681).withOpacity(0.5),
             ),
             const SizedBox(height: 12),
-            Text(
+            const Text(
               'Add photos',
               style: TextStyle(
-                color: const Color(0xFF6E7681),
+                color: Color(0xFF6E7681),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
+            const Text(
               'Show off your property',
               style: TextStyle(
-                color: const Color(0xFFB0B6BF),
+                color: Color(0xFFB0B6BF),
                 fontSize: 13,
               ),
             ),
@@ -243,10 +243,10 @@ class PhotoUploadWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Add',
               style: TextStyle(
-                color: const Color(0xFF6E7681),
+                color: Color(0xFF6E7681),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
