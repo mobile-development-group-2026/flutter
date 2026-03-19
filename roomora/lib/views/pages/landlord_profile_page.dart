@@ -7,7 +7,7 @@ import '../widgets/progress_indicator.dart';
 import 'landlord_listing_page.dart';
 
 class LandlordProfilePage extends StatelessWidget {
-  const LandlordProfilePage({Key? key}) : super(key: key);
+  const LandlordProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -203,11 +203,11 @@ class LandlordProfilePage extends StatelessWidget {
           ],
         ),
         const SizedBox(width: 20),
-        Expanded(
+        const Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Profile photo',
                 style: TextStyle(
                   color: Color(0xFF212327),
@@ -215,8 +215,8 @@ class LandlordProfilePage extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
-              const Text(
+              SizedBox(height: 4),
+              Text(
                 'A clear photo helps landlords and roommates feel confident about you.',
                 style: TextStyle(
                   color: Color(0xFFB0B6BF),
