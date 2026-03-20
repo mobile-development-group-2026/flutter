@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Landlord App',
+        title: 'Roomora',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: const Color(0xFF7B5BF2),
@@ -37,39 +37,9 @@ class MyApp extends StatelessWidget {
               fontFamily: 'Sora',
             ),
           ),
-          textTheme: const TextTheme(
-            headlineLarge: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF212327),
-              letterSpacing: -0.64,
-              fontFamily: 'Sora',
-            ),
-            headlineMedium: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF212327),
-              letterSpacing: -0.56,
-              fontFamily: 'Sora',
-            ),
-            bodyLarge: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF212327),
-              fontFamily: 'Sora',
-            ),
-            bodyMedium: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF6E7681),
-              fontFamily: 'Sora',
-            ),
-            bodySmall: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFFB0B6BF),
-              fontFamily: 'Sora',
-            ),
+          colorScheme: ColorScheme.fromSwatch().copyWith(
+            primary: const Color(0xFF7B5BF2),
+            secondary: const Color(0xFF4B31A8),
           ),
         ),
         home: const LandlordProfilePage(),

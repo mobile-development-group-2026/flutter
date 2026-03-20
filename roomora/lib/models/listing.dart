@@ -1,117 +1,111 @@
 class Listing {
-  final String id;
+  final int id;
   final String title;
-  final double rent;
-  final double deposit;
-  final String leaseLength;
-  final DateTime moveInDate;
-  final List<String> houseRules;
-  final List<String> photos;
-  final String propertyType;
-  final List<String> amenities;
+  final String listingType;
   final String description;
-  final String coverPhoto;
-  final String landlordId;
-  final bool isPublished;
+  final String propertyType;
+  final String address;
+  final String city;
+  final String state;
+  final String zipCode;
+  final double latitude;
+  final double longitude;
+  final double rent;
+  final double securityDeposit;
+  final bool utilitiesIncluded;
+  final double? utilitiesCost;
+  final DateTime availableDate;
+  final int leaseTermMonths;
+  final int bedrooms;
+  final int bathrooms;
+  final bool petsAllowed;
+  final bool partiesAllowed;
+  final bool smokingAllowed;
+  final int userId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   Listing({
     required this.id,
     required this.title,
-    required this.rent,
-    required this.deposit,
-    required this.leaseLength,
-    required this.moveInDate,
-    required this.houseRules,
-    required this.photos,
-    required this.propertyType,
-    required this.amenities,
+    required this.listingType,
     required this.description,
-    required this.coverPhoto,
-    required this.landlordId,
-    required this.isPublished,
+    required this.propertyType,
+    required this.address,
+    required this.city,
+    required this.state,
+    required this.zipCode,
+    required this.latitude,
+    required this.longitude,
+    required this.rent,
+    required this.securityDeposit,
+    required this.utilitiesIncluded,
+    this.utilitiesCost,
+    required this.availableDate,
+    required this.leaseTermMonths,
+    required this.bedrooms,
+    required this.bathrooms,
+    required this.petsAllowed,
+    required this.partiesAllowed,
+    required this.smokingAllowed,
+    required this.userId,
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory Listing.fromJson(Map<String, dynamic> json) {
     return Listing(
-      id: json['id'] ?? '',
+      id: json['id'] ?? 0,
       title: json['title'] ?? '',
-      rent: (json['rent'] ?? 0).toDouble(),
-      deposit: (json['deposit'] ?? 0).toDouble(),
-      leaseLength: json['leaseLength'] ?? '',
-      moveInDate: DateTime.parse(json['moveInDate'] ?? DateTime.now().toIso8601String()),
-      houseRules: List<String>.from(json['houseRules'] ?? []),
-      photos: List<String>.from(json['photos'] ?? []),
-      propertyType: json['propertyType'] ?? '',
-      amenities: List<String>.from(json['amenities'] ?? []),
+      listingType: json['listing_type'] ?? 'property',
       description: json['description'] ?? '',
-      coverPhoto: json['coverPhoto'] ?? '',
-      landlordId: json['landlordId'] ?? '',
-      isPublished: json['isPublished'] ?? false,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      propertyType: json['property_type'] ?? 'apartment',
+      address: json['address'] ?? '',
+      city: json['city'] ?? '',
+      state: json['state'] ?? '',
+      zipCode: json['zip_code'] ?? '',
+      latitude: (json['latitude'] ?? 0).toDouble(),
+      longitude: (json['longitude'] ?? 0).toDouble(),
+      rent: (json['rent'] ?? 0).toDouble(),
+      securityDeposit: (json['security_deposit'] ?? 0).toDouble(),
+      utilitiesIncluded: json['utilities_included'] ?? false,
+      utilitiesCost: json['utilities_cost']?.toDouble(),
+      availableDate: DateTime.parse(json['available_date'] ?? DateTime.now().toIso8601String()),
+      leaseTermMonths: json['lease_term_months'] ?? 12,
+      bedrooms: json['bedrooms'] ?? 1,
+      bathrooms: json['bathrooms'] ?? 1,
+      petsAllowed: json['pets_allowed'] ?? false,
+      partiesAllowed: json['parties_allowed'] ?? false,
+      smokingAllowed: json['smoking_allowed'] ?? false,
+      userId: json['user_id'] ?? 0,
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'title': title,
-      'rent': rent,
-      'deposit': deposit,
-      'leaseLength': leaseLength,
-      'moveInDate': moveInDate.toIso8601String(),
-      'houseRules': houseRules,
-      'photos': photos,
-      'propertyType': propertyType,
-      'amenities': amenities,
+      'listing_type': listingType,
       'description': description,
-      'coverPhoto': coverPhoto,
-      'landlordId': landlordId,
-      'isPublished': isPublished,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'property_type': propertyType,
+      'address': address,
+      'city': city,
+      'state': state,
+      'zip_code': zipCode,
+      'latitude': latitude,
+      'longitude': longitude,
+      'rent': rent,
+      'security_deposit': securityDeposit,
+      'utilities_included': utilitiesIncluded,
+      'utilities_cost': utilitiesCost,
+      'available_date': availableDate.toIso8601String().split('T').first,
+      'lease_term_months': leaseTermMonths,
+      'bedrooms': bedrooms,
+      'bathrooms': bathrooms,
+      'pets_allowed': petsAllowed,
+      'parties_allowed': partiesAllowed,
+      'smoking_allowed': smokingAllowed,
     };
-  }
-
-  Listing copyWith({
-    String? id,
-    String? title,
-    double? rent,
-    double? deposit,
-    String? leaseLength,
-    DateTime? moveInDate,
-    List<String>? houseRules,
-    List<String>? photos,
-    String? propertyType,
-    List<String>? amenities,
-    String? description,
-    String? coverPhoto,
-    String? landlordId,
-    bool? isPublished,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Listing(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      rent: rent ?? this.rent,
-      deposit: deposit ?? this.deposit,
-      leaseLength: leaseLength ?? this.leaseLength,
-      moveInDate: moveInDate ?? this.moveInDate,
-      houseRules: houseRules ?? this.houseRules,
-      photos: photos ?? this.photos,
-      propertyType: propertyType ?? this.propertyType,
-      amenities: amenities ?? this.amenities,
-      description: description ?? this.description,
-      coverPhoto: coverPhoto ?? this.coverPhoto,
-      landlordId: landlordId ?? this.landlordId,
-      isPublished: isPublished ?? this.isPublished,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
   }
 }

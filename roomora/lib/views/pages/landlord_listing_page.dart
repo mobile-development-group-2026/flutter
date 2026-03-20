@@ -51,7 +51,6 @@ class LandlordListingPage extends StatelessWidget {
                         const ProgressIndicatorWidget(currentStep: 2, totalSteps: 3),
                         const SizedBox(height: 24),
                         
-                        // Header
                         RichText(
                           text: const TextSpan(
                             children: [
@@ -114,7 +113,32 @@ class LandlordListingPage extends StatelessWidget {
                         _buildDescriptionSection(viewModel),
                         const SizedBox(height: 32),
 
-                        _buildActionButtons(context, viewModel, landlordId),
+                        if (viewModel.errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.red.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error, color: Colors.red.shade700, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      viewModel.errorMessage!,
+                                      style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        _buildActionButtons(context, viewModel),
                         const SizedBox(height: 20),
                       ],
                     ),
@@ -603,13 +627,13 @@ class LandlordListingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, ListingViewModel viewModel, String landlordId) {
+  Widget _buildActionButtons(BuildContext context, ListingViewModel viewModel) {
     return Column(
       children: [
         CustomButton(
           text: 'Publish Listing',
           onPressed: () async {
-            final listing = await viewModel.submitListing(landlordId);
+            final listing = await viewModel.submitListing();
             if (listing != null) {
               _showSuccessDialog(context);
             } else if (viewModel.errorMessage != null) {
