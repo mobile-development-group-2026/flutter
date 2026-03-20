@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../models/listing.dart';
 import '../services/api_service.dart';
 import '../services/models/api_listing.dart';

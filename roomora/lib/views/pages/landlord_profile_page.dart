@@ -8,7 +8,7 @@ import '../widgets/progress_indicator.dart';
 import 'landlord_listing_page.dart';
 
 class LandlordProfilePage extends StatelessWidget {
-  const LandlordProfilePage({super.key});
+  const LandlordProfilePage({super.key, required void Function() onNext});
 
   @override
   Widget build(BuildContext context) {
