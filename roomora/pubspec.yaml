@@ -1,5 +1,5 @@
 name: roomora
-description: A landlord app for creating property listings
+description: A landlord and student app for property listings
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,12 +10,17 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.2
-  http: ^1.3.0
-  image_picker: ^1.1.2
   intl: ^0.20.2
+  http: ^1.3.0
   shared_preferences: ^2.5.2
+  image_picker: ^1.1.2
   permission_handler: ^12.0.1
   device_info_plus: ^12.3.0
+  geolocator: ^13.0.1
+  geocoding: ^3.0.0
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+  dart_jsonwebtoken: ^2.17.0
 
 dev_dependencies:
   flutter_test:
