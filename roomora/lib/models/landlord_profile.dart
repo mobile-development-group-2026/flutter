@@ -1,81 +1,63 @@
 class LandlordProfile {
-  final String id;
-  final String bio;
-  final String profilePhoto;
-  final String name;
+  final int id;
+  final String? bio;
+  final String? profilePhoto;
+  final String firstName;
+  final String lastName;
   final String email;
-  final String phone;
-  final double responseRate;
-  final int responseTime;
+  final String? phone;
+  final String? university;
+  final bool verified;
+  final String role;
+  final String clerkId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   LandlordProfile({
     required this.id,
-    required this.bio,
-    required this.profilePhoto,
-    required this.name,
+    this.bio,
+    this.profilePhoto,
+    required this.firstName,
+    required this.lastName,
     required this.email,
-    required this.phone,
-    required this.responseRate,
-    required this.responseTime,
+    this.phone,
+    this.university,
+    required this.verified,
+    required this.role,
+    required this.clerkId,
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory LandlordProfile.fromJson(Map<String, dynamic> json) {
     return LandlordProfile(
-      id: json['id'] ?? '',
-      bio: json['bio'] ?? '',
-      profilePhoto: json['profilePhoto'] ?? '',
-      name: json['name'] ?? '',
+      id: json['id'] ?? 0,
+      bio: json['bio'],
+      profilePhoto: json['profile_photo'],
+      firstName: json['first_name'] ?? '',
+      lastName: json['last_name'] ?? '',
       email: json['email'] ?? '',
-      phone: json['phone'] ?? '',
-      responseRate: (json['responseRate'] ?? 100).toDouble(),
-      responseTime: json['responseTime'] ?? 1,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      phone: json['phone'],
+      university: json['university'],
+      verified: json['verified'] ?? false,
+      role: json['role'] ?? 'landlord',
+      clerkId: json['clerk_id'] ?? '',
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'bio': bio,
-      'profilePhoto': profilePhoto,
-      'name': name,
+      'first_name': firstName,
+      'last_name': lastName,
       'email': email,
       'phone': phone,
-      'responseRate': responseRate,
-      'responseTime': responseTime,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'university': university,
+      'bio': bio,
+      'profile_photo': profilePhoto,
     };
   }
 
-  LandlordProfile copyWith({
-    String? id,
-    String? bio,
-    String? profilePhoto,
-    String? name,
-    String? email,
-    String? phone,
-    double? responseRate,
-    int? responseTime,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return LandlordProfile(
-      id: id ?? this.id,
-      bio: bio ?? this.bio,
-      profilePhoto: profilePhoto ?? this.profilePhoto,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      responseRate: responseRate ?? this.responseRate,
-      responseTime: responseTime ?? this.responseTime,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
+  String get fullName => '$firstName $lastName';
 }
