@@ -89,11 +89,10 @@ class LandlordListingPage extends StatelessWidget {
                         PhotoUploadWidget(
                           photos: viewModel.photos,
                           coverPhoto: viewModel.coverPhoto,
-                          onAddPhoto: (path) => viewModel.addPhoto(path),
+                          onAddPhoto: () => viewModel.showImageSourceOptions(context),
                           onRemovePhoto: (path) => viewModel.removePhoto(path),
                           onSetCover: (path) => viewModel.setCoverPhoto(path),
-                        ),
-                        const SizedBox(height: 32),
+                          ),
 
                         _buildDetailsSection(viewModel),
                         const SizedBox(height: 24),
