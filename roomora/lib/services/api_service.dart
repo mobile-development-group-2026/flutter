@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:roomora/models/landlord_profile.dart';
 import 'models/api_listing.dart';
-import 'models/api_profile.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.19:3000/api/v1';
+  static const String baseUrl = 'http://10.0.2.2:3000/api/v1';
   static const String clerkId = 'dev_landlord_1';
   
   final http.Client _client = http.Client();
@@ -18,52 +18,78 @@ class ApiService {
     };
   }
 
+  Future<Map<String, String>> _getMultipartHeaders() async {
+    return {
+      'Accept': 'application/json',
+      'X-Dev-Clerk-Id': 'dev_landlord_1',
+    };
+  }
+
   Future<LandlordProfile> getProfile() async {
-  try {
-    final headers = await _getHeaders();
-    final response = await _client.get(
-      Uri.parse('$baseUrl/profile'),
-      headers: headers,
-    );
+    try {
+      final headers = await _getHeaders();
+      final response = await _client.get(
+        Uri.parse('$baseUrl/profile'),
+        headers: headers,
+      );
 
-    if (response.statusCode == 200) {
-      return LandlordProfile.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to get profile: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        return LandlordProfile.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to get profile: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
     }
-  } catch (e) {
-    throw Exception('Network error: $e');
   }
-}
 
-  Future<ApiProfile> updateProfile(ApiProfile profile) async {
-  print('ApiService.updateProfile INICIADO');
-  print('URL: $baseUrl/profile');
-  print('Body: ${profile.toJson()}');
-  
-  try {
-    final headers = await _getHeaders();
-    print('Headers: $headers');
+  Future<LandlordProfile> updateProfile(Map<String, dynamic> profileData) async {
+    final userData = {
+      'user': {
+        'first_name': profileData['firstName'],
+        'last_name': profileData['lastName'],
+        'email': profileData['email'],
+        'phone': profileData['phone'],
+        'avatar_url': profileData['profilePhoto'],
+        'onboarded': true,
+      }
+    };
     
-    final response = await _client.patch(
-      Uri.parse('$baseUrl/profile'),
-      headers: headers,
-      body: json.encode(profile.toJson()),
-    );
-    
-    print('Respuesta status: ${response.statusCode}');
-    print('Respuesta body: ${response.body}');
-    
-    if (response.statusCode == 200) {
-      return ApiProfile.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to update profile: ${response.statusCode}');
+    try {
+      final headers = await _getHeaders();
+      
+      final response = await _client.patch(
+        Uri.parse('$baseUrl/profile'),
+        headers: headers,
+        body: json.encode(userData),
+      );
+      
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final userJson = responseData['data'] ?? responseData;
+        
+        return LandlordProfile(
+          id: userJson['id']?.toString() ?? '',
+          bio: profileData['bio'],
+          profilePhoto: userJson['avatar_url'],
+          firstName: userJson['first_name'] ?? '',
+          lastName: userJson['last_name'] ?? '',
+          email: userJson['email'] ?? '',
+          phone: userJson['phone'],
+          university: null,
+          verified: userJson['verified'] ?? false,
+          role: userJson['role'] ?? 'landlord',
+          clerkId: userJson['clerk_id'] ?? '',
+          createdAt: DateTime.parse(userJson['created_at'] ?? DateTime.now().toIso8601String()),
+          updatedAt: DateTime.parse(userJson['updated_at'] ?? DateTime.now().toIso8601String()),
+        );
+      } else {
+        throw Exception('Failed to update profile: ${response.statusCode}');
+      }
+    } catch (e) {
+      rethrow;
     }
-  } catch (e) {
-    print('ERROR en updateProfile: $e');
-    rethrow;
   }
-}
 
   Future<List<ApiListing>> getListings() async {
     try {
@@ -105,16 +131,22 @@ class ApiService {
   Future<ApiListing> createListing(ApiListing listing) async {
     try {
       final headers = await _getHeaders();
+      final body = json.encode(listing.toJson());
+      
       final response = await _client.post(
         Uri.parse('$baseUrl/listings'),
         headers: headers,
-        body: json.encode(listing.toJson()),
+        body: body,
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return ApiListing.fromJson(json.decode(response.body));
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          return ApiListing.fromJson(responseData['data']);
+        }
+        return ApiListing.fromJson(responseData);
       } else {
-        throw Exception('Failed to create listing: ${response.statusCode}');
+        throw Exception('Failed to create listing: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       throw Exception('Network error: $e');
@@ -158,19 +190,31 @@ class ApiService {
 
   Future<void> uploadListingPhoto(String listingId, String imagePath) async {
     try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/listings/$listingId/photos'),
+      final File imageFile = File(imagePath);
+      
+      if (!await imageFile.exists()) {
+        throw Exception('File does not exist: $imagePath');
+      }
+      
+      final uri = Uri.parse('$baseUrl/listings/$listingId/photos');
+      final request = http.MultipartRequest('POST', uri);
+      
+      final headers = await _getMultipartHeaders();
+      request.headers.addAll(headers);
+      
+      final multipartFile = await http.MultipartFile.fromPath(
+        'photo',
+        imagePath,
+        filename: imagePath.split('/').last,
       );
       
-      final headers = await _getHeaders();
-      request.headers.addAll(headers);
-      request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
+      request.files.add(multipartFile);
       
-      var response = await request.send();
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
       
       if (response.statusCode != 201 && response.statusCode != 200) {
-        throw Exception('Failed to upload photo: ${response.statusCode}');
+        throw Exception('Failed to upload photo: ${response.statusCode} - $responseBody');
       }
     } catch (e) {
       throw Exception('Network error: $e');

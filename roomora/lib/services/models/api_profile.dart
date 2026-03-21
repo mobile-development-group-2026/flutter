@@ -1,5 +1,5 @@
 class ApiProfile {
-  final int id;
+  final String id;
   final String? bio;
   final String? profilePhoto;
   final String firstName;
@@ -31,7 +31,7 @@ class ApiProfile {
 
   factory ApiProfile.fromJson(Map<String, dynamic> json) {
     return ApiProfile(
-      id: json['id'] ?? 0,
+      id: json['id'] ?? '',
       bio: json['bio'],
       profilePhoto: json['profile_photo'],
       firstName: json['first_name'] ?? '',
