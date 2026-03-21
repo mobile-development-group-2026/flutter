@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/landlord_profile.dart';
 import '../services/api_service.dart';
-import '../services/models/api_profile.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final ApiService _apiService;
@@ -139,77 +138,44 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<LandlordProfile?> submitProfile() async {
-  print('submitProfile() INICIADO');
-  
-  if (!validateForm()) {
-    print('Formulario invalido');
-    _errorMessage = 'Please fill in all required fields and add a photo';
+    if (!validateForm()) {
+      _errorMessage = 'Please fill in all required fields and add a photo';
+      notifyListeners();
+      return null;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
-    return null;
+
+    try {
+      final nameParts = nameController.text.trim().split(' ');
+      final firstName = nameParts.isNotEmpty ? nameParts[0] : '';
+      final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+      final profileData = {
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': emailController.text.trim(),
+        'phone': phoneController.text.trim(),
+        'profilePhoto': _profilePhoto,
+        'bio': bioController.text,
+      };
+
+      final result = await _apiService.updateProfile(profileData);
+      
+      _currentProfile = result;
+      
+      _isLoading = false;
+      notifyListeners();
+      return _currentProfile;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
   }
-
-  _isLoading = true;
-  _errorMessage = null;
-  notifyListeners();
-
-  try {
-    print('Preparando perfil para enviar...');
-    
-    final nameParts = nameController.text.trim().split(' ');
-    final firstName = nameParts.isNotEmpty ? nameParts[0] : '';
-    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
-
-    final apiProfile = ApiProfile(
-      id: 0,
-      bio: bioController.text,
-      profilePhoto: _profilePhoto,
-      firstName: firstName,
-      lastName: lastName,
-      email: emailController.text.trim(),
-      phone: phoneController.text.trim(),
-      university: null,
-      verified: true,
-      role: 'landlord',
-      clerkId: 'dev_landlord_1',
-      createdAt: DateTime.now().toIso8601String(),
-      updatedAt: DateTime.now().toIso8601String(),
-    );
-
-    print('Llamando a _apiService.updateProfile...');
-    print('URL: ${ApiService.baseUrl}/profile');
-    
-    final result = await _apiService.updateProfile(apiProfile);
-    
-    print('Respuesta recibida: $result');
-    
-    _currentProfile = LandlordProfile(
-      id: result.id,
-      bio: result.bio,
-      profilePhoto: result.profilePhoto,
-      firstName: result.firstName,
-      lastName: result.lastName,
-      email: result.email,
-      phone: result.phone,
-      university: result.university,
-      verified: result.verified,
-      role: result.role,
-      clerkId: result.clerkId,
-      createdAt: DateTime.parse(result.createdAt),
-      updatedAt: DateTime.parse(result.updatedAt),
-    );
-    
-    _isLoading = false;
-    notifyListeners();
-    return _currentProfile;
-  } catch (e) {
-    print('ERROR: $e');
-    print('Stack trace: ${StackTrace.current}');
-    _isLoading = false;
-    _errorMessage = e.toString();
-    notifyListeners();
-    return null;
-  }
-}
 
   Future<bool> updateProfile() async {
     if (_currentProfile == null) return false;
@@ -222,39 +188,18 @@ class ProfileViewModel extends ChangeNotifier {
       final firstName = nameParts.isNotEmpty ? nameParts[0] : '';
       final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
 
-      final apiProfile = ApiProfile(
-        id: _currentProfile!.id,
-        bio: bioController.text,
-        profilePhoto: _profilePhoto,
-        firstName: firstName,
-        lastName: lastName,
-        email: emailController.text.trim(),
-        phone: phoneController.text.trim(),
-        university: _currentProfile!.university,
-        verified: _currentProfile!.verified,
-        role: _currentProfile!.role,
-        clerkId: _currentProfile!.clerkId,
-        createdAt: _currentProfile!.createdAt.toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-      );
+      final profileData = {
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': emailController.text.trim(),
+        'phone': phoneController.text.trim(),
+        'profilePhoto': _profilePhoto,
+        'bio': bioController.text,
+      };
 
-      final result = await _apiService.updateProfile(apiProfile);
+      final result = await _apiService.updateProfile(profileData);
       
-      _currentProfile = LandlordProfile(
-        id: result.id,
-        bio: result.bio,
-        profilePhoto: result.profilePhoto,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        email: result.email,
-        phone: result.phone,
-        university: result.university,
-        verified: result.verified,
-        role: result.role,
-        clerkId: result.clerkId,
-        createdAt: DateTime.parse(result.createdAt),
-        updatedAt: DateTime.parse(result.updatedAt),
-      );
+      _currentProfile = result;
       
       _errorMessage = null;
       _isLoading = false;

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class PhotoUploadWidget extends StatelessWidget {
   final List<String> photos;
   final String? coverPhoto;
-  final Function(String) onAddPhoto;
+  final VoidCallback onAddPhoto;
   final Function(String) onRemovePhoto;
   final Function(String) onSetCover;
 
@@ -53,7 +54,7 @@ class PhotoUploadWidget extends StatelessWidget {
         if (photos.isNotEmpty)
           const Center(
             child: Text(
-              'First photo is the cover',
+              'Tap on star to set as cover photo',
               style: TextStyle(
                 color: Color(0xFFB0B6BF),
                 fontSize: 12,
@@ -66,7 +67,7 @@ class PhotoUploadWidget extends StatelessWidget {
 
   Widget _buildEmptyState() {
     return GestureDetector(
-      onTap: () => onAddPhoto('new_photo'),
+      onTap: onAddPhoto,
       child: Container(
         height: 200,
         width: double.infinity,
@@ -137,9 +138,15 @@ class PhotoUploadWidget extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            photo,
+          child: Image.file(
+            File(photo),
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[200],
+                child: const Icon(Icons.broken_image),
+              );
+            },
           ),
         ),
         
@@ -210,7 +217,7 @@ class PhotoUploadWidget extends StatelessWidget {
 
   Widget _buildAddButton() {
     return GestureDetector(
-      onTap: () => onAddPhoto('new_photo'),
+      onTap: onAddPhoto,
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF6F7F8),
