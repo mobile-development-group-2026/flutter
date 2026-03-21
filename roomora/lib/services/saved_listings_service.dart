@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/saved_listing.dart';
 
 class SavedListingsService {
-  static const String baseUrl = 'http://192.168.0.19:3000/api/v1';
+  static const String baseUrl = 'http://10.0.2.2:3000/api/v1';
   
   final http.Client _client = http.Client();
 
