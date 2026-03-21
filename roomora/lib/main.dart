@@ -1,22 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'views/pages/landlord_profile_page.dart';
-import 'viewmodels/profile_viewmodel.dart';
 import 'services/api_service.dart';
+import 'viewmodels/profile_viewmodel.dart';
+import 'viewmodels/listing_viewmodel.dart';
+import 'viewmodels/gps_viewmodel.dart';
+import 'viewmodels/map_viewmodel.dart';
+import 'views/pages/discover_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const RoomoraApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class RoomoraApp extends StatelessWidget {
+  const RoomoraApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final apiService = ApiService();
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => ProfileViewModel(apiService: ApiService()),
+          create: (_) => ProfileViewModel(apiService: apiService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ListingViewModel(apiService: apiService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => GPSViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => MapViewModel(apiService: apiService),
         ),
       ],
       child: MaterialApp(
@@ -42,7 +56,7 @@ class MyApp extends StatelessWidget {
             secondary: const Color(0xFF4B31A8),
           ),
         ),
-        home: const LandlordProfilePage(),
+        home: const DiscoverPage(),
       ),
     );
   }

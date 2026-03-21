@@ -27,6 +27,10 @@ android {
         versionName = flutter.versionName
     }
 
+    dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    }
+    
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
