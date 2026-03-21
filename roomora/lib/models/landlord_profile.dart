@@ -1,5 +1,5 @@
 class LandlordProfile {
-  final int id;
+  final String id;
   final String? bio;
   final String? profilePhoto;
   final String firstName;
@@ -31,9 +31,9 @@ class LandlordProfile {
 
   factory LandlordProfile.fromJson(Map<String, dynamic> json) {
     return LandlordProfile(
-      id: json['id'] ?? 0,
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
       bio: json['bio'],
-      profilePhoto: json['profile_photo'],
+      profilePhoto: json['avatar_url'] ?? json['profile_photo'],
       firstName: json['first_name'] ?? '',
       lastName: json['last_name'] ?? '',
       email: json['email'] ?? '',
