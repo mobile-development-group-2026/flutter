@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
 import '/../theme/colors.dart';
 import '../widgets/custom_button.dart';
+import '/../viewmodels/auth_viewmodel.dart';
+import 'landlord_verification/landlord_verification_page.dart';
+import 'discover_page.dart';
 
 enum AccountType { student, landlord }
 
@@ -16,11 +20,20 @@ class _SignUpPageState extends State<SignUpPage> {
   AccountType _selectedType = AccountType.student;
   bool _obscurePassword = true;
   bool _acceptedTerms = false;
-  final TextEditingController _passwordController = TextEditingController();
   double _passwordStrength = 0;
+
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -32,6 +45,55 @@ class _SignUpPageState extends State<SignUpPage> {
     if (value.contains(RegExp(r'[0-9]'))) strength += 0.25;
     if (value.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) strength += 0.25;
     setState(() => _passwordStrength = strength);
+  }
+
+  Future<void> _handleSignUp(BuildContext context, AuthViewModel auth) async {
+    if (_firstNameController.text.trim().isEmpty ||
+        _lastNameController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor completa todos los campos')),
+      );
+      return;
+    }
+
+    if (!_acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debes aceptar los términos y condiciones')),
+      );
+      return;
+    }
+
+    final success = await auth.signUp(
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      email: _emailController.text.trim(),
+      role: _selectedType == AccountType.student ? 'student' : 'landlord',
+      phone: _selectedType == AccountType.landlord
+          ? _phoneController.text.trim()
+          : null,
+    );
+
+    if (!context.mounted) return;
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.errorMessage ?? 'Error desconocido')),
+      );
+      return;
+    }
+
+    if (auth.isLandlord) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LandlordVerificationPage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DiscoverPage()),
+      );
+    }
   }
 
   @override
@@ -70,11 +132,17 @@ class _SignUpPageState extends State<SignUpPage> {
             const SizedBox(height: 20),
             _buildTermsCheckbox(),
             const SizedBox(height: 24),
-            CustomButton(
-              text: _selectedType == AccountType.student
-                  ? 'Create Student Account'
-                  : 'Create Landlord Account',
-              onPressed: () {},
+            Consumer<AuthViewModel>(
+              builder: (context, auth, _) {
+                return CustomButton(
+                  text: _selectedType == AccountType.student
+                      ? 'Create Student Account'
+                      : 'Create Landlord Account',
+                  onPressed: auth.isLoading
+                      ? () {}
+                      : () => _handleSignUp(context, auth),
+                );
+              },
             ),
           ],
         ),
@@ -237,7 +305,11 @@ class _SignUpPageState extends State<SignUpPage> {
             children: [
               _buildFieldLabel('FIRST NAME'),
               const SizedBox(height: 8),
-              _buildTextField(hint: 'Andy', icon: LucideIcons.user),
+              _buildTextField(
+                hint: 'Andy',
+                icon: LucideIcons.user,
+                controller: _firstNameController,
+              ),
             ],
           ),
         ),
@@ -248,7 +320,11 @@ class _SignUpPageState extends State<SignUpPage> {
             children: [
               _buildFieldLabel('LAST NAME'),
               const SizedBox(height: 8),
-              _buildTextField(hint: 'Ortiz', icon: LucideIcons.user),
+              _buildTextField(
+                hint: 'Ortiz',
+                icon: LucideIcons.user,
+                controller: _lastNameController,
+              ),
             ],
           ),
         ),
@@ -260,6 +336,7 @@ class _SignUpPageState extends State<SignUpPage> {
     return _buildTextField(
       hint: 'a.ortiz@ufl.edu',
       icon: LucideIcons.mail,
+      controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       suffixText: 'Required',
     );
@@ -269,6 +346,7 @@ class _SignUpPageState extends State<SignUpPage> {
     return _buildTextField(
       hint: '+1 (813) 841-0566',
       icon: LucideIcons.phone,
+      controller: _phoneController,
       keyboardType: TextInputType.phone,
       suffixText: 'Required',
     );
@@ -277,10 +355,12 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildTextField({
     required String hint,
     required IconData icon,
+    TextEditingController? controller,
     TextInputType keyboardType = TextInputType.text,
     String? suffixText,
   }) {
     return TextField(
+      controller: controller,
       keyboardType: keyboardType,
       style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.neutral900),
       decoration: InputDecoration(
@@ -288,11 +368,7 @@ class _SignUpPageState extends State<SignUpPage> {
         hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.neutral500),
         prefixIcon: Icon(icon, size: 18, color: AppColors.neutral600),
         suffixText: suffixText,
-        suffixStyle: TextStyle(
-          fontFamily: 'Sora',
-          fontSize: 12,
-          color: AppColors.neutral600,
-        ),
+        suffixStyle: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.neutral600),
         filled: true,
         fillColor: AppColors.neutral200,
         border: OutlineInputBorder(
@@ -419,10 +495,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 children: [
                   TextSpan(
                     text: 'Identity verification required. ',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.purple700,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.purple700),
                   ),
                   const TextSpan(
                     text: 'After signup you\'ll verify your ID and ownership documents to list properties on Roomora.',
@@ -463,27 +536,17 @@ class _SignUpPageState extends State<SignUpPage> {
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 13,
-                color: AppColors.neutral700,
-              ),
+              style: TextStyle(fontFamily: 'Sora', fontSize: 13, color: AppColors.neutral700),
               children: [
                 const TextSpan(text: 'I agree to the '),
                 TextSpan(
                   text: 'Terms of Service',
-                  style: TextStyle(
-                    color: AppColors.purple500,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: AppColors.purple500, fontWeight: FontWeight.w600),
                 ),
                 const TextSpan(text: ' and '),
                 TextSpan(
                   text: 'Privacy Policy',
-                  style: TextStyle(
-                    color: AppColors.purple500,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: AppColors.purple500, fontWeight: FontWeight.w600),
                 ),
               ],
             ),

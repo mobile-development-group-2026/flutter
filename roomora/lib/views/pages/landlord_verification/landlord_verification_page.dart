@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
 import '/../theme/colors.dart';
+import '/../viewmodels/auth_viewmodel.dart';
 import '/../views/pages/landlord_profile_page.dart';
-import  'confirm_identity_page.dart';
+import 'confirm_identity_page.dart';
 import 'sms_verification_page.dart';
 import 'proof_address_page.dart';
 
@@ -21,6 +23,8 @@ class _LandlordVerificationPageState extends State<LandlordVerificationPage> {
   void _nextStep() {
     if (_currentStep < _totalSteps) {
       setState(() => _currentStep++);
+    } else {
+      _finishVerification();
     }
   }
 
@@ -30,6 +34,17 @@ class _LandlordVerificationPageState extends State<LandlordVerificationPage> {
     } else {
       Navigator.pop(context);
     }
+  }
+
+  Future<void> _finishVerification() async {
+    final auth = context.read<AuthViewModel>();
+    await auth.markOnboarded();
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => LandlordProfilePage(onNext: () {})),
+    );
   }
 
   @override
@@ -113,11 +128,7 @@ class _LandlordVerificationPageState extends State<LandlordVerificationPage> {
     Color textColor;
     Color borderColor;
 
-    if (isCompleted) {
-      bgColor = AppColors.purple500;
-      textColor = Colors.white;
-      borderColor = AppColors.purple500;
-    } else if (isCurrent) {
+    if (isCompleted || isCurrent) {
       bgColor = AppColors.purple500;
       textColor = Colors.white;
       borderColor = AppColors.purple500;

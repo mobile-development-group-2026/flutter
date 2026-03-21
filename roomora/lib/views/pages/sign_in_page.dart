@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
 import '/../theme/colors.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/social_button.dart';
-import '/../views/pages/sign_up_page.dart';
+import '/../viewmodels/auth_viewmodel.dart';
+import 'sign_up_page.dart';
+import 'landlord_verification/landlord_verification_page.dart';
+import 'discover_page.dart';
 
 class SignInSheet extends StatefulWidget {
   const SignInSheet({super.key});
@@ -14,6 +18,49 @@ class SignInSheet extends StatefulWidget {
 
 class _SignInSheetState extends State<SignInSheet> {
   bool _obscurePassword = true;
+  final _emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSignIn(BuildContext context, AuthViewModel auth) async {
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingresa tu email')),
+      );
+      return;
+    }
+
+    final success = await auth.signIn(
+      email: _emailController.text.trim(),
+    );
+
+    if (!context.mounted) return;
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.errorMessage ?? 'Error desconocido')),
+      );
+      return;
+    }
+
+    Navigator.pop(context);
+
+    if (auth.isLandlord) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LandlordVerificationPage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DiscoverPage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +93,16 @@ class _SignInSheetState extends State<SignInSheet> {
             _buildPasswordField(),
             _buildForgotPassword(),
             const SizedBox(height: 18),
-            CustomButton(text: 'Sign In →', onPressed: () {}),
+            Consumer<AuthViewModel>(
+              builder: (context, auth, _) {
+                return CustomButton(
+                  text: auth.isLoading ? 'Signing in...' : 'Sign In →',
+                  onPressed: auth.isLoading
+                      ? () {}
+                      : () => _handleSignIn(context, auth),
+                );
+              },
+            ),
             const SizedBox(height: 28),
             _buildDivider(),
             const SizedBox(height: 20),
@@ -209,19 +265,12 @@ class _SignInSheetState extends State<SignInSheet> {
 
   Widget _buildEmailField() {
     return TextField(
+      controller: _emailController,
       keyboardType: TextInputType.emailAddress,
-      style: TextStyle(
-        fontFamily: 'Sora',
-        fontSize: 14,
-        color: AppColors.neutral900,
-      ),
+      style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.neutral900),
       decoration: InputDecoration(
         hintText: 'you@university.edu',
-        hintStyle: TextStyle(
-          fontFamily: 'Sora',
-          fontSize: 14,
-          color: AppColors.neutral500,
-        ),
+        hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.neutral500),
         prefixIcon: Icon(LucideIcons.mail, size: 18, color: AppColors.neutral600),
         filled: true,
         fillColor: AppColors.neutral200,
@@ -245,18 +294,10 @@ class _SignInSheetState extends State<SignInSheet> {
   Widget _buildPasswordField() {
     return TextField(
       obscureText: _obscurePassword,
-      style: TextStyle(
-        fontFamily: 'Sora',
-        fontSize: 14,
-        color: AppColors.neutral900,
-      ),
+      style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.neutral900),
       decoration: InputDecoration(
         hintText: 'Enter your password',
-        hintStyle: TextStyle(
-          fontFamily: 'Sora',
-          fontSize: 14,
-          color: AppColors.neutral500,
-        ),
+        hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.neutral500),
         prefixIcon: Icon(LucideIcons.lockKeyhole, size: 18, color: AppColors.neutral600),
         suffixIcon: IconButton(
           icon: Icon(
@@ -314,11 +355,7 @@ class _SignInSheetState extends State<SignInSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
             'or continue with',
-            style: TextStyle(
-              fontFamily: 'Sora',
-              fontSize: 12,
-              color: AppColors.neutral600,
-            ),
+            style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.neutral600),
           ),
         ),
         Expanded(child: Divider(color: AppColors.neutral400, thickness: 1)),
@@ -327,55 +364,35 @@ class _SignInSheetState extends State<SignInSheet> {
   }
 
   Widget _buildSocialButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: SocialButton(
-            provider: SocialProvider.google,
-            onPressed: () {},
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: SocialButton(
-            provider: SocialProvider.apple,
-            onPressed: () {},
-          ),
-        ),
-      ],
+    return SocialButton(
+      provider: SocialProvider.google,
+      onPressed: () {},
     );
   }
 
- Widget _buildSignUpRow() {
-  return Center(
-    child: GestureDetector(
-      onTap: () {
-        Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SignUpPage()),
-        );
-      },
-      child: RichText(
-        text: TextSpan(
-          style: TextStyle(
-            fontFamily: 'Sora',
-            fontSize: 13,
-            color: AppColors.neutral700,
-          ),
-          children: [
-            const TextSpan(text: "Don't have an account? "),
-            TextSpan(
-              text: 'Sign up free',
-              style: TextStyle(
-                color: AppColors.purple500,
-                fontWeight: FontWeight.w700,
+  Widget _buildSignUpRow() {
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SignUpPage()),
+          );
+        },
+        child: RichText(
+          text: TextSpan(
+            style: TextStyle(fontFamily: 'Sora', fontSize: 13, color: AppColors.neutral700),
+            children: [
+              const TextSpan(text: "Don't have an account? "),
+              TextSpan(
+                text: 'Sign up free',
+                style: TextStyle(color: AppColors.purple500, fontWeight: FontWeight.w700),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

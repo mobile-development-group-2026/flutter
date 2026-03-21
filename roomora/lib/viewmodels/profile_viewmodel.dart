@@ -172,7 +172,7 @@ class ProfileViewModel extends ChangeNotifier {
       role: 'landlord',
       clerkId: 'dev_landlord_1',
       createdAt: DateTime.now().toIso8601String(),
-      updatedAt: DateTime.now().toIso8601String(),
+      updatedAt: DateTime.now().toIso8601String(), onboarded: false,
     );
 
     print('Llamando a _apiService.updateProfile...');
@@ -235,7 +235,7 @@ class ProfileViewModel extends ChangeNotifier {
         role: _currentProfile!.role,
         clerkId: _currentProfile!.clerkId,
         createdAt: _currentProfile!.createdAt.toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(), onboarded: false,
       );
 
       final result = await _apiService.updateProfile(apiProfile);

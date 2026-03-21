@@ -5,65 +5,139 @@ import 'models/api_listing.dart';
 import 'models/api_profile.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.19:3000/api/v1';
-  static const String clerkId = 'dev_landlord_1';
-  
+  static const String baseUrl = 'http://10.0.2.2:3000/api/v1';
+
+  String _clerkId = '';
   final http.Client _client = http.Client();
+
+  void setClerkId(String clerkId) {
+    _clerkId = clerkId;
+  }
 
   Future<Map<String, String>> _getHeaders() async {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'X-Dev-Clerk-Id': 'dev_landlord_1',
+      'X-Dev-Clerk-Id': _clerkId,
     };
   }
 
-  Future<LandlordProfile> getProfile() async {
+  Future<ApiProfile> syncUser({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String role,
+    String? phone,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final body = {
+        'user': {
+          'first_name': firstName,
+          'last_name': lastName,
+          'email': email,
+          'role': role,
+          if (phone != null) 'phone': phone,
+        }
+      };
+
+      final response = await _client.post(
+        Uri.parse('$baseUrl/auth/sync'),
+        headers: headers,
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return ApiProfile.fromJson(data['data']);
+      } else {
+        final data = json.decode(response.body);
+        throw Exception(data['error'] ?? 'Error al crear usuario');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<ApiProfile> getProfile() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await _client.get(
+        Uri.parse('$baseUrl/profile'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return ApiProfile.fromJson(data['data']);
+      } else {
+        final data = json.decode(response.body);
+        throw Exception(data['error'] ?? 'Error al obtener perfil');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<ApiProfile> updateProfile(ApiProfile profile) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await _client.patch(
+        Uri.parse('$baseUrl/profile'),
+        headers: headers,
+        body: json.encode({'user': profile.toJson()}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return ApiProfile.fromJson(data['data']);
+      } else {
+        final data = json.decode(response.body);
+        throw Exception(data['error'] ?? 'Error al actualizar perfil');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<ApiProfile> markOnboarded() async {
   try {
     final headers = await _getHeaders();
-    final response = await _client.get(
+    final response = await _client.patch(
       Uri.parse('$baseUrl/profile'),
       headers: headers,
+      body: json.encode({'user': {'onboarded': true}}),
     );
 
     if (response.statusCode == 200) {
-      return LandlordProfile.fromJson(json.decode(response.body));
+      final data = json.decode(response.body);
+      return ApiProfile.fromJson(data['data']);
     } else {
-      throw Exception('Failed to get profile: ${response.statusCode}');
+      final data = json.decode(response.body);
+      throw Exception(data['error'] ?? 'Error al actualizar perfil');
     }
   } catch (e) {
     throw Exception('Network error: $e');
   }
 }
 
-  Future<ApiProfile> updateProfile(ApiProfile profile) async {
-  print('ApiService.updateProfile INICIADO');
-  print('URL: $baseUrl/profile');
-  print('Body: ${profile.toJson()}');
-  
-  try {
-    final headers = await _getHeaders();
-    print('Headers: $headers');
-    
-    final response = await _client.patch(
-      Uri.parse('$baseUrl/profile'),
-      headers: headers,
-      body: json.encode(profile.toJson()),
-    );
-    
-    print('Respuesta status: ${response.statusCode}');
-    print('Respuesta body: ${response.body}');
-    
-    if (response.statusCode == 200) {
-      return ApiProfile.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to update profile: ${response.statusCode}');
+  Future<LandlordProfile> getLandlordProfile() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await _client.get(
+        Uri.parse('$baseUrl/profile'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        return LandlordProfile.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to get profile: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
     }
-  } catch (e) {
-    print('ERROR en updateProfile: $e');
-    rethrow;
   }
-}
 
   Future<List<ApiListing>> getListings() async {
     try {
@@ -74,7 +148,8 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonList = json.decode(response.body);
+        final data = json.decode(response.body);
+        final List<dynamic> jsonList = data['data'];
         return jsonList.map((json) => ApiListing.fromJson(json)).toList();
       } else {
         throw Exception('Failed to get listings: ${response.statusCode}');
@@ -93,7 +168,8 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return ApiListing.fromJson(json.decode(response.body));
+        final data = json.decode(response.body);
+        return ApiListing.fromJson(data['data']);
       } else {
         throw Exception('Failed to get listing: ${response.statusCode}');
       }
@@ -108,11 +184,12 @@ class ApiService {
       final response = await _client.post(
         Uri.parse('$baseUrl/listings'),
         headers: headers,
-        body: json.encode(listing.toJson()),
+        body: json.encode({'listing': listing.toJson()}),
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return ApiListing.fromJson(json.decode(response.body));
+        final data = json.decode(response.body);
+        return ApiListing.fromJson(data['data']);
       } else {
         throw Exception('Failed to create listing: ${response.statusCode}');
       }
@@ -127,11 +204,12 @@ class ApiService {
       final response = await _client.patch(
         Uri.parse('$baseUrl/listings/${listing.id}'),
         headers: headers,
-        body: json.encode(listing.toJson()),
+        body: json.encode({'listing': listing.toJson()}),
       );
 
       if (response.statusCode == 200) {
-        return ApiListing.fromJson(json.decode(response.body));
+        final data = json.decode(response.body);
+        return ApiListing.fromJson(data['data']);
       } else {
         throw Exception('Failed to update listing: ${response.statusCode}');
       }
@@ -162,13 +240,13 @@ class ApiService {
         'POST',
         Uri.parse('$baseUrl/listings/$listingId/photos'),
       );
-      
+
       final headers = await _getHeaders();
       request.headers.addAll(headers);
       request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
-      
+
       var response = await request.send();
-      
+
       if (response.statusCode != 201 && response.statusCode != 200) {
         throw Exception('Failed to upload photo: ${response.statusCode}');
       }
