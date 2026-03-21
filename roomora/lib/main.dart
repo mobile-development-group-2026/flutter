@@ -6,6 +6,7 @@ import 'viewmodels/listing_viewmodel.dart';
 import 'viewmodels/gps_viewmodel.dart';
 import 'viewmodels/map_viewmodel.dart';
 import 'views/pages/discover_page.dart';
+import 'views/pages/landlord_profile_page.dart';
 
 void main() {
   runApp(const RoomoraApp());
@@ -56,7 +57,7 @@ class RoomoraApp extends StatelessWidget {
             secondary: const Color(0xFF4B31A8),
           ),
         ),
-        home: const DiscoverPage(),
+        home: const LandlordProfilePage(),
       ),
     );
   }
