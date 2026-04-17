@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '/../theme/colors.dart';
-import '../widgets/custom_button.dart';
+import '../../widgets/custom_button.dart';
 import '/../viewmodels/auth_viewmodel.dart';
-import 'landlord_verification/landlord_verification_page.dart';
-import 'discover_page.dart';
+import '../landlord_verification/landlord_verification_page.dart';
+import '../discover_page.dart';
 
 enum AccountType { student, landlord }
 
