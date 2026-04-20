@@ -5,9 +5,9 @@ import '../services/api_service.dart';
 import '../services/models/api_profile.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  final ApiService _apiService;
+  // final ApiService _apiService;
 
-  ProfileViewModel({required ApiService apiService}) : _apiService = apiService;
+  // ProfileViewModel({required ApiService apiService}) : _apiService = apiService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -175,28 +175,28 @@ class ProfileViewModel extends ChangeNotifier {
       updatedAt: DateTime.now().toIso8601String(), onboarded: false,
     );
 
-    print('Llamando a _apiService.updateProfile...');
-    print('URL: ${ApiService.baseUrl}/profile');
+    // print('Llamando a _apiService.updateProfile...');
+    // print('URL: ${ApiService.baseUrl}/profile');
     
-    final result = await _apiService.updateProfile(apiProfile);
+    // final result = await _apiService.updateProfile(apiProfile);
     
-    print('Respuesta recibida: $result');
+    // print('Respuesta recibida: $result');
     
-    _currentProfile = LandlordProfile(
-      id: result.id,
-      bio: result.bio,
-      profilePhoto: result.profilePhoto,
-      firstName: result.firstName,
-      lastName: result.lastName,
-      email: result.email,
-      phone: result.phone,
-      university: result.university,
-      verified: result.verified,
-      role: result.role,
-      clerkId: result.clerkId,
-      createdAt: DateTime.parse(result.createdAt),
-      updatedAt: DateTime.parse(result.updatedAt),
-    );
+    // _currentProfile = LandlordProfile(
+    //   id: result.id,
+    //   bio: result.bio,
+    //   profilePhoto: result.profilePhoto,
+    //   firstName: result.firstName,
+    //   lastName: result.lastName,
+    //   email: result.email,
+    //   phone: result.phone,
+    //   university: result.university,
+    //   verified: result.verified,
+    //   role: result.role,
+    //   clerkId: result.clerkId,
+    //   createdAt: DateTime.parse(result.createdAt),
+    //   updatedAt: DateTime.parse(result.updatedAt),
+    // );
     
     _isLoading = false;
     notifyListeners();
@@ -238,23 +238,23 @@ class ProfileViewModel extends ChangeNotifier {
         updatedAt: DateTime.now().toIso8601String(), onboarded: false,
       );
 
-      final result = await _apiService.updateProfile(apiProfile);
+      // final result = await _apiService.updateProfile(apiProfile);
       
-      _currentProfile = LandlordProfile(
-        id: result.id,
-        bio: result.bio,
-        profilePhoto: result.profilePhoto,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        email: result.email,
-        phone: result.phone,
-        university: result.university,
-        verified: result.verified,
-        role: result.role,
-        clerkId: result.clerkId,
-        createdAt: DateTime.parse(result.createdAt),
-        updatedAt: DateTime.parse(result.updatedAt),
-      );
+      // _currentProfile = LandlordProfile(
+      //   id: result.id,
+      //   bio: result.bio,
+      //   profilePhoto: result.profilePhoto,
+      //   firstName: result.firstName,
+      //   lastName: result.lastName,
+      //   email: result.email,
+      //   phone: result.phone,
+      //   university: result.university,
+      //   verified: result.verified,
+      //   role: result.role,
+      //   clerkId: result.clerkId,
+      //   createdAt: DateTime.parse(result.createdAt),
+      //   updatedAt: DateTime.parse(result.updatedAt),
+      // );
       
       _errorMessage = null;
       _isLoading = false;

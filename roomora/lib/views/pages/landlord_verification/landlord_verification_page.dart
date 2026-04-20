@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '/../theme/colors.dart';
-import '/../viewmodels/auth_viewmodel.dart';
 import '/../views/pages/landlord_profile_page.dart';
 import 'confirm_identity_page.dart';
 import 'sms_verification_page.dart';
+import '/../state/user_session.dart';
 import 'proof_address_page.dart';
 
 class LandlordVerificationPage extends StatefulWidget {
@@ -37,8 +37,8 @@ class _LandlordVerificationPageState extends State<LandlordVerificationPage> {
   }
 
   Future<void> _finishVerification() async {
-    final auth = context.read<AuthViewModel>();
-    await auth.markOnboarded();
+    final session = context.read<UserSession>();
+    session.clear();
 
     if (!mounted) return;
     Navigator.pushReplacement(

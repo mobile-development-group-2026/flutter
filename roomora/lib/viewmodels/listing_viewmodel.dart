@@ -5,9 +5,9 @@ import '../services/api_service.dart';
 import '../services/models/api_listing.dart';
 
 class ListingViewModel extends ChangeNotifier {
-  final ApiService _apiService;
+  // final ApiService _apiService;
 
-  ListingViewModel({required ApiService apiService}) : _apiService = apiService;
+  // ListingViewModel({required ApiService apiService}) : _apiService = apiService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -281,41 +281,41 @@ class ListingViewModel extends ChangeNotifier {
         updatedAt: DateTime.now().toIso8601String(),
       );
 
-      final result = await _apiService.createListing(apiListing);
+      // final result = await _apiService.createListing(apiListing);
       
-      _currentListing = Listing(
-        id: result.id,
-        title: result.title,
-        listingType: result.listingType,
-        description: result.description,
-        propertyType: result.propertyType,
-        address: result.address,
-        city: result.city,
-        state: result.state,
-        zipCode: result.zipCode,
-        latitude: result.latitude,
-        longitude: result.longitude,
-        rent: result.rent,
-        securityDeposit: result.securityDeposit,
-        utilitiesIncluded: result.utilitiesIncluded,
-        utilitiesCost: result.utilitiesCost,
-        availableDate: DateTime.parse(result.availableDate),
-        leaseTermMonths: result.leaseTermMonths,
-        bedrooms: result.bedrooms,
-        bathrooms: result.bathrooms,
-        petsAllowed: result.petsAllowed,
-        partiesAllowed: result.partiesAllowed,
-        smokingAllowed: result.smokingAllowed,
-        userId: result.userId,
-        createdAt: DateTime.parse(result.createdAt),
-        updatedAt: DateTime.parse(result.updatedAt),
-      );
+      // _currentListing = Listing(
+      //   id: result.id,
+      //   title: result.title,
+      //   listingType: result.listingType,
+      //   description: result.description,
+      //   propertyType: result.propertyType,
+      //   address: result.address,
+      //   city: result.city,
+      //   state: result.state,
+      //   zipCode: result.zipCode,
+      //   latitude: result.latitude,
+      //   longitude: result.longitude,
+      //   rent: result.rent,
+      //   securityDeposit: result.securityDeposit,
+      //   utilitiesIncluded: result.utilitiesIncluded,
+      //   utilitiesCost: result.utilitiesCost,
+      //   availableDate: DateTime.parse(result.availableDate),
+      //   leaseTermMonths: result.leaseTermMonths,
+      //   bedrooms: result.bedrooms,
+      //   bathrooms: result.bathrooms,
+      //   petsAllowed: result.petsAllowed,
+      //   partiesAllowed: result.partiesAllowed,
+      //   smokingAllowed: result.smokingAllowed,
+      //   userId: result.userId,
+      //   createdAt: DateTime.parse(result.createdAt),
+      //   updatedAt: DateTime.parse(result.updatedAt),
+      // );
       
-      for (String photoPath in _photos) {
-        if (photoPath.startsWith('/') || photoPath.startsWith('C:')) {
-          await _apiService.uploadListingPhoto(result.id.toString(), photoPath);
-        }
-      }
+      // for (String photoPath in _photos) {
+      //   if (photoPath.startsWith('/') || photoPath.startsWith('C:')) {
+      //     await _apiService.uploadListingPhoto(result.id.toString(), photoPath);
+      //   }
+      // }
       
       _isLoading = false;
       notifyListeners();
@@ -332,85 +332,85 @@ class ListingViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    try {
-      final listings = await _apiService.getListings();
-      _landlordListings = listings.map((apiListing) => Listing(
-        id: apiListing.id,
-        title: apiListing.title,
-        listingType: apiListing.listingType,
-        description: apiListing.description,
-        propertyType: apiListing.propertyType,
-        address: apiListing.address,
-        city: apiListing.city,
-        state: apiListing.state,
-        zipCode: apiListing.zipCode,
-        latitude: apiListing.latitude,
-        longitude: apiListing.longitude,
-        rent: apiListing.rent,
-        securityDeposit: apiListing.securityDeposit,
-        utilitiesIncluded: apiListing.utilitiesIncluded,
-        utilitiesCost: apiListing.utilitiesCost,
-        availableDate: DateTime.parse(apiListing.availableDate),
-        leaseTermMonths: apiListing.leaseTermMonths,
-        bedrooms: apiListing.bedrooms,
-        bathrooms: apiListing.bathrooms,
-        petsAllowed: apiListing.petsAllowed,
-        partiesAllowed: apiListing.partiesAllowed,
-        smokingAllowed: apiListing.smokingAllowed,
-        userId: apiListing.userId,
-        createdAt: DateTime.parse(apiListing.createdAt),
-        updatedAt: DateTime.parse(apiListing.updatedAt),
-      )).where((l) => l.userId == 1).toList();
-      _errorMessage = null;
-    } catch (e) {
-      _errorMessage = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
+  //   try {
+  //     final listings = await _apiService.getListings();
+  //     _landlordListings = listings.map((apiListing) => Listing(
+  //       id: apiListing.id,
+  //       title: apiListing.title,
+  //       listingType: apiListing.listingType,
+  //       description: apiListing.description,
+  //       propertyType: apiListing.propertyType,
+  //       address: apiListing.address,
+  //       city: apiListing.city,
+  //       state: apiListing.state,
+  //       zipCode: apiListing.zipCode,
+  //       latitude: apiListing.latitude,
+  //       longitude: apiListing.longitude,
+  //       rent: apiListing.rent,
+  //       securityDeposit: apiListing.securityDeposit,
+  //       utilitiesIncluded: apiListing.utilitiesIncluded,
+  //       utilitiesCost: apiListing.utilitiesCost,
+  //       availableDate: DateTime.parse(apiListing.availableDate),
+  //       leaseTermMonths: apiListing.leaseTermMonths,
+  //       bedrooms: apiListing.bedrooms,
+  //       bathrooms: apiListing.bathrooms,
+  //       petsAllowed: apiListing.petsAllowed,
+  //       partiesAllowed: apiListing.partiesAllowed,
+  //       smokingAllowed: apiListing.smokingAllowed,
+  //       userId: apiListing.userId,
+  //       createdAt: DateTime.parse(apiListing.createdAt),
+  //       updatedAt: DateTime.parse(apiListing.updatedAt),
+  //     )).where((l) => l.userId == 1).toList();
+  //     _errorMessage = null;
+  //   } catch (e) {
+  //     _errorMessage = e.toString();
+  //   } finally {
+  //     _isLoading = false;
+  //     notifyListeners();
+  //   }
+  // }
 
   Future<void> loadListing(String id) async {
     _isLoading = true;
     notifyListeners();
 
-    try {
-      final apiListing = await _apiService.getListing(id);
-      _currentListing = Listing(
-        id: apiListing.id,
-        title: apiListing.title,
-        listingType: apiListing.listingType,
-        description: apiListing.description,
-        propertyType: apiListing.propertyType,
-        address: apiListing.address,
-        city: apiListing.city,
-        state: apiListing.state,
-        zipCode: apiListing.zipCode,
-        latitude: apiListing.latitude,
-        longitude: apiListing.longitude,
-        rent: apiListing.rent,
-        securityDeposit: apiListing.securityDeposit,
-        utilitiesIncluded: apiListing.utilitiesIncluded,
-        utilitiesCost: apiListing.utilitiesCost,
-        availableDate: DateTime.parse(apiListing.availableDate),
-        leaseTermMonths: apiListing.leaseTermMonths,
-        bedrooms: apiListing.bedrooms,
-        bathrooms: apiListing.bathrooms,
-        petsAllowed: apiListing.petsAllowed,
-        partiesAllowed: apiListing.partiesAllowed,
-        smokingAllowed: apiListing.smokingAllowed,
-        userId: apiListing.userId,
-        createdAt: DateTime.parse(apiListing.createdAt),
-        updatedAt: DateTime.parse(apiListing.updatedAt),
-      );
-      _errorMessage = null;
-    } catch (e) {
-      _errorMessage = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
+  //   try {
+  //     final apiListing = await _apiService.getListing(id);
+  //     _currentListing = Listing(
+  //       id: apiListing.id,
+  //       title: apiListing.title,
+  //       listingType: apiListing.listingType,
+  //       description: apiListing.description,
+  //       propertyType: apiListing.propertyType,
+  //       address: apiListing.address,
+  //       city: apiListing.city,
+  //       state: apiListing.state,
+  //       zipCode: apiListing.zipCode,
+  //       latitude: apiListing.latitude,
+  //       longitude: apiListing.longitude,
+  //       rent: apiListing.rent,
+  //       securityDeposit: apiListing.securityDeposit,
+  //       utilitiesIncluded: apiListing.utilitiesIncluded,
+  //       utilitiesCost: apiListing.utilitiesCost,
+  //       availableDate: DateTime.parse(apiListing.availableDate),
+  //       leaseTermMonths: apiListing.leaseTermMonths,
+  //       bedrooms: apiListing.bedrooms,
+  //       bathrooms: apiListing.bathrooms,
+  //       petsAllowed: apiListing.petsAllowed,
+  //       partiesAllowed: apiListing.partiesAllowed,
+  //       smokingAllowed: apiListing.smokingAllowed,
+  //       userId: apiListing.userId,
+  //       createdAt: DateTime.parse(apiListing.createdAt),
+  //       updatedAt: DateTime.parse(apiListing.updatedAt),
+  //     );
+  //     _errorMessage = null;
+  //   } catch (e) {
+  //     _errorMessage = e.toString();
+  //   } finally {
+  //     _isLoading = false;
+  //     notifyListeners();
+  //   }
+  // }
 
   Future<bool> updateListing(Listing listing) async {
     _isLoading = true;
@@ -445,35 +445,35 @@ class ListingViewModel extends ChangeNotifier {
         updatedAt: DateTime.now().toIso8601String(),
       );
 
-      final updated = await _apiService.updateListing(apiListing);
+      // final updated = await _apiService.updateListing(apiListing);
       
-      _currentListing = Listing(
-        id: updated.id,
-        title: updated.title,
-        listingType: updated.listingType,
-        description: updated.description,
-        propertyType: updated.propertyType,
-        address: updated.address,
-        city: updated.city,
-        state: updated.state,
-        zipCode: updated.zipCode,
-        latitude: updated.latitude,
-        longitude: updated.longitude,
-        rent: updated.rent,
-        securityDeposit: updated.securityDeposit,
-        utilitiesIncluded: updated.utilitiesIncluded,
-        utilitiesCost: updated.utilitiesCost,
-        availableDate: DateTime.parse(updated.availableDate),
-        leaseTermMonths: updated.leaseTermMonths,
-        bedrooms: updated.bedrooms,
-        bathrooms: updated.bathrooms,
-        petsAllowed: updated.petsAllowed,
-        partiesAllowed: updated.partiesAllowed,
-        smokingAllowed: updated.smokingAllowed,
-        userId: updated.userId,
-        createdAt: DateTime.parse(updated.createdAt),
-        updatedAt: DateTime.parse(updated.updatedAt),
-      );
+      // _currentListing = Listing(
+      //   id: updated.id,
+      //   title: updated.title,
+      //   listingType: updated.listingType,
+      //   description: updated.description,
+      //   propertyType: updated.propertyType,
+      //   address: updated.address,
+      //   city: updated.city,
+      //   state: updated.state,
+      //   zipCode: updated.zipCode,
+      //   latitude: updated.latitude,
+      //   longitude: updated.longitude,
+      //   rent: updated.rent,
+      //   securityDeposit: updated.securityDeposit,
+      //   utilitiesIncluded: updated.utilitiesIncluded,
+      //   utilitiesCost: updated.utilitiesCost,
+      //   availableDate: DateTime.parse(updated.availableDate),
+      //   leaseTermMonths: updated.leaseTermMonths,
+      //   bedrooms: updated.bedrooms,
+      //   bathrooms: updated.bathrooms,
+      //   petsAllowed: updated.petsAllowed,
+      //   partiesAllowed: updated.partiesAllowed,
+      //   smokingAllowed: updated.smokingAllowed,
+      //   userId: updated.userId,
+      //   createdAt: DateTime.parse(updated.createdAt),
+      //   updatedAt: DateTime.parse(updated.updatedAt),
+      // );
       
       final index = _landlordListings.indexWhere((l) => l.id == listing.id);
       if (index != -1) {
@@ -492,35 +492,37 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteListing(String id) async {
-    _isLoading = true;
-    notifyListeners();
+  // Future<bool> deleteListing(String id) async {
+  //   _isLoading = true;
+  //   notifyListeners();
 
-    try {
-      await _apiService.deleteListing(id);
-      _landlordListings.removeWhere((l) => l.id.toString() == id);
-      if (_currentListing?.id.toString() == id) {
-        _currentListing = null;
-      }
-      _errorMessage = null;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _isLoading = false;
-      _errorMessage = e.toString();
-      notifyListeners();
-      return false;
-    }
-  }
+  //   try {
+  //     await _apiService.deleteListing(id);
+  //     _landlordListings.removeWhere((l) => l.id.toString() == id);
+  //     if (_currentListing?.id.toString() == id) {
+  //       _currentListing = null;
+  //     }
+  //     _errorMessage = null;
+  //     _isLoading = false;
+  //     notifyListeners();
+  //     return true;
+  //   } catch (e) {
+  //     _isLoading = false;
+  //     _errorMessage = e.toString();
+  //     notifyListeners();
+  //     return false;
+  //   }
+  // }
 
-  @override
-  void dispose() {
-    titleController.dispose();
-    descriptionController.dispose();
-    rentController.dispose();
-    depositController.dispose();
-    leaseLengthController.dispose();
-    super.dispose();
+  // @override
+  // void dispose() {
+  //   titleController.dispose();
+  //   descriptionController.dispose();
+  //   rentController.dispose();
+  //   depositController.dispose();
+  //   leaseLengthController.dispose();
+  //   super.dispose();
+  // }
+}
   }
 }

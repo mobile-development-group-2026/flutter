@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:clerk_flutter/clerk_flutter.dart'; 
 import 'package:clerk_auth/clerk_auth.dart';       
 import 'state/user_session.dart'; 
-import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/profile_viewmodel.dart';
 import 'viewmodels/listing_viewmodel.dart';
 import 'views/pages/landing_page.dart';
@@ -28,8 +27,8 @@ class RoomoraApp extends StatelessWidget {
   ),
       child: MultiProvider(
         providers: [
-          // ChangeNotifierProvider(create: (_) => ProfileViewModel()),
-          // ChangeNotifierProvider(create: (_) => ListingViewModel()),
+          ChangeNotifierProvider(create: (_) => UserSession()),
+
         ],
         child: MaterialApp(
           title: 'Roomora',

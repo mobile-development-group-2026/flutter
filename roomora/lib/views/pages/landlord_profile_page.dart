@@ -13,7 +13,7 @@ class LandlordProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ProfileViewModel(apiService: ApiService()),
+      create: (_) => ProfileViewModel(),
       child: Scaffold(
         backgroundColor: const Color(0xFFFCFCFD),
         appBar: AppBar(

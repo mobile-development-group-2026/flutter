@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:provider/provider.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
+
 import '/../theme/colors.dart';
 import '../../widgets/custom_button.dart';
-import '/../viewmodels/auth_viewmodel.dart';
-import '../landlord_verification/landlord_verification_page.dart';
-import '../discover_page.dart';
-
-enum AccountType { student, landlord }
+import '/../models/user_role.dart';
+import '/../viewmodels/Auth/sign_up_viewmodel.dart';
+import 'verify_email_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -17,7 +16,9 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  AccountType _selectedType = AccountType.student;
+  final SignUpViewModel _viewModel = SignUpViewModel();
+  
+  UserRole _selectedRole = UserRole.student;
   bool _obscurePassword = true;
   bool _acceptedTerms = false;
   double _passwordStrength = 0;
@@ -35,6 +36,7 @@ class _SignUpPageState extends State<SignUpPage> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -47,7 +49,7 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => _passwordStrength = strength);
   }
 
-  Future<void> _handleSignUp(BuildContext context, AuthViewModel auth) async {
+  Future<void> _handleSignUp(BuildContext context) async {
     if (_firstNameController.text.trim().isEmpty ||
         _lastNameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
@@ -64,89 +66,96 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
-    final success = await auth.signUp(
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      email: _emailController.text.trim(),
-      role: _selectedType == AccountType.student ? 'student' : 'landlord',
-      phone: _selectedType == AccountType.landlord
-          ? _phoneController.text.trim()
-          : null,
-    );
+    _viewModel.firstName = _firstNameController.text.trim();
+    _viewModel.lastName = _lastNameController.text.trim();
+    _viewModel.email = _emailController.text.trim();
+    _viewModel.password = _passwordController.text.trim();
+    _viewModel.phone = _phoneController.text.trim();
+    _viewModel.role = _selectedRole;
+    _viewModel.agreedToTerms = _acceptedTerms;
+
+    final clerkAuth = ClerkAuth.of(context);
+    
+    await _viewModel.signUp(clerkAuth);
 
     if (!context.mounted) return;
 
-    if (!success) {
+    if (_viewModel.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Error desconocido')),
+        SnackBar(
+          content: Text(_viewModel.errorMessage!),
+          backgroundColor: Colors.red.shade400,
+        ),
       );
       return;
     }
 
-    if (auth.isLandlord) {
-      Navigator.pushReplacement(
+    if (_viewModel.isVerifying) {
+      Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const LandlordVerificationPage()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DiscoverPage()),
+        MaterialPageRoute(
+          builder: (_) => VerifyEmailPage(
+            role: _selectedRole,
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
+          ),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildToggle(),
-            const SizedBox(height: 28),
-            _buildNameRow(),
-            const SizedBox(height: 16),
-            _buildFieldLabel('EMAIL ADDRESS'),
-            const SizedBox(height: 8),
-            _buildEmailField(),
-            if (_selectedType == AccountType.landlord) ...[
-              const SizedBox(height: 16),
-              _buildFieldLabel('PHONE NUMBER'),
-              const SizedBox(height: 8),
-              _buildPhoneField(),
-              const SizedBox(height: 16),
-              _buildVerificationNotice(),
-            ],
-            const SizedBox(height: 16),
-            _buildFieldLabel('PASSWORD'),
-            const SizedBox(height: 8),
-            _buildPasswordField(),
-            const SizedBox(height: 8),
-            _buildPasswordStrengthBar(),
-            const SizedBox(height: 20),
-            _buildTermsCheckbox(),
-            const SizedBox(height: 24),
-            Consumer<AuthViewModel>(
-              builder: (context, auth, _) {
-                return CustomButton(
-                  text: _selectedType == AccountType.student
-                      ? 'Create Student Account'
-                      : 'Create Landlord Account',
-                  onPressed: auth.isLoading
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: _buildAppBar(),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildToggle(),
+                const SizedBox(height: 28),
+                _buildNameRow(),
+                const SizedBox(height: 16),
+                _buildFieldLabel('EMAIL ADDRESS'),
+                const SizedBox(height: 8),
+                _buildEmailField(),
+                if (_selectedRole == UserRole.landlord) ...[
+                  const SizedBox(height: 16),
+                  _buildFieldLabel('PHONE NUMBER'),
+                  const SizedBox(height: 8),
+                  _buildPhoneField(),
+                  const SizedBox(height: 16),
+                  _buildVerificationNotice(),
+                ],
+                const SizedBox(height: 16),
+                _buildFieldLabel('PASSWORD'),
+                const SizedBox(height: 8),
+                _buildPasswordField(),
+                const SizedBox(height: 8),
+                _buildPasswordStrengthBar(),
+                const SizedBox(height: 20),
+                _buildTermsCheckbox(),
+                const SizedBox(height: 24),
+                CustomButton(
+                  text: _viewModel.buttonTitle,
+                  onPressed: _viewModel.isLoading
                       ? () {}
-                      : () => _handleSignUp(context, auth),
-                );
-              },
+                      : () => _handleSignUp(context),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 
@@ -252,18 +261,18 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
       child: Row(
         children: [
-          _toggleOption(label: '🎓  Student', type: AccountType.student),
-          _toggleOption(label: '🏠  Landlord', type: AccountType.landlord),
+          _toggleOption(label: '🎓  Student', role: UserRole.student),
+          _toggleOption(label: '🏠  Landlord', role: UserRole.landlord),
         ],
       ),
     );
   }
 
-  Widget _toggleOption({required String label, required AccountType type}) {
-    final isSelected = _selectedType == type;
+  Widget _toggleOption({required String label, required UserRole role}) {
+    final isSelected = _selectedRole == role;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _selectedType = type),
+        onTap: () => setState(() => _selectedRole = role),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           margin: const EdgeInsets.all(4),

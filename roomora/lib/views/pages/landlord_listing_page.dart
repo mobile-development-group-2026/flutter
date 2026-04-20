@@ -18,7 +18,7 @@ class LandlordListingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ListingViewModel(apiService: ApiService()),
+      create: (_) => ListingViewModel(),
       child: Scaffold(
         backgroundColor: const Color(0xFFFCFCFD),
         appBar: AppBar(

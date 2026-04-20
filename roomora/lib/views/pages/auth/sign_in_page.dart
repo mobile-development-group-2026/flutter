@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
+
 import '/../theme/colors.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/social_button.dart';
-import '/../viewmodels/auth_viewmodel.dart';
 import 'sign_up_page.dart';
-import '../landlord_verification/landlord_verification_page.dart';
-import '../discover_page.dart';
+
+import '/../viewmodels/Auth/sign_in_viewmodel.dart';
+import '/../state/user_session.dart';
 
 class SignInSheet extends StatefulWidget {
   const SignInSheet({super.key});
@@ -17,101 +19,104 @@ class SignInSheet extends StatefulWidget {
 }
 
 class _SignInSheetState extends State<SignInSheet> {
+  final SignInViewModel _viewModel = SignInViewModel();
   bool _obscurePassword = true;
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
+    _passwordController.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
-  Future<void> _handleSignIn(BuildContext context, AuthViewModel auth) async {
-    if (_emailController.text.trim().isEmpty) {
+  Future<void> _handleSignIn(BuildContext context) async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa tu email')),
+        const SnackBar(content: Text('Por favor ingresa tu email y contraseña')),
       );
       return;
     }
 
-    final success = await auth.signIn(
-      email: _emailController.text.trim(),
-    );
+    _viewModel.email = email;
+    _viewModel.password = password;
+
+    final clerkAuth = ClerkAuth.of(context);
+    final userSession = context.read<UserSession>();
+
+    final success = await _viewModel.signIn(clerkAuth, userSession);
 
     if (!context.mounted) return;
 
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Error desconocido')),
+        SnackBar(
+          content: Text(_viewModel.errorMessage ?? 'Error desconocido'),
+          backgroundColor: Colors.red.shade400,
+        ),
       );
       return;
     }
 
     Navigator.pop(context);
-
-    if (auth.isLandlord) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LandlordVerificationPage()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DiscoverPage()),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHandle(),
-            _buildHeader(),
-            const SizedBox(height: 20),
-            _buildSocialProof(),
-            const SizedBox(height: 28),
-            _buildFieldLabel('EMAIL ADDRESS'),
-            const SizedBox(height: 8),
-            _buildEmailField(),
-            const SizedBox(height: 16),
-            _buildFieldLabel('PASSWORD'),
-            const SizedBox(height: 8),
-            _buildPasswordField(),
-            _buildForgotPassword(),
-            const SizedBox(height: 18),
-            Consumer<AuthViewModel>(
-              builder: (context, auth, _) {
-                return CustomButton(
-                  text: auth.isLoading ? 'Signing in...' : 'Sign In →',
-                  onPressed: auth.isLoading
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, _) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHandle(),
+                _buildHeader(),
+                const SizedBox(height: 20),
+                _buildSocialProof(),
+                const SizedBox(height: 28),
+                _buildFieldLabel('EMAIL ADDRESS'),
+                const SizedBox(height: 8),
+                _buildEmailField(),
+                const SizedBox(height: 16),
+                _buildFieldLabel('PASSWORD'),
+                const SizedBox(height: 8),
+                _buildPasswordField(),
+                _buildForgotPassword(),
+                const SizedBox(height: 18),
+                CustomButton(
+                  text: _viewModel.buttonTitle,
+                  onPressed: _viewModel.isLoading
                       ? () {}
-                      : () => _handleSignIn(context, auth),
-                );
-              },
+                      : () => _handleSignIn(context),
+                ),
+                const SizedBox(height: 28),
+                _buildDivider(),
+                const SizedBox(height: 20),
+                _buildSocialButtons(),
+                const SizedBox(height: 24),
+                _buildSignUpRow(),
+              ],
             ),
-            const SizedBox(height: 28),
-            _buildDivider(),
-            const SizedBox(height: 20),
-            _buildSocialButtons(),
-            const SizedBox(height: 24),
-            _buildSignUpRow(),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 
@@ -293,6 +298,7 @@ class _SignInSheetState extends State<SignInSheet> {
 
   Widget _buildPasswordField() {
     return TextField(
+      controller: _passwordController,
       obscureText: _obscurePassword,
       style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.neutral900),
       decoration: InputDecoration(

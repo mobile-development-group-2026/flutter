@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '/../views/widgets/login_background.dart';
 import '/../theme/colors.dart';
-import '/../views/pages/sign_in_page.dart';
-import '/../views/pages/sign_up_page.dart';
+import '/../views/pages/Auth/sign_in_page.dart';
+import '/../views/pages/Auth/sign_up_page.dart';
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
