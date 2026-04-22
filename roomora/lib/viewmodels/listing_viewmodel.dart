@@ -191,9 +191,7 @@ class ListingViewModel extends ChangeNotifier {
   void addPhoto(String photoPath) {
     _photos.add(photoPath);
     _photosSubject.add(_photos);
-    if (_coverPhoto == null) {
-      _coverPhoto = photoPath;
-    }
+    _coverPhoto ??= photoPath;
     notifyListeners();
   }
 

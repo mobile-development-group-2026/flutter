@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import '../models/listing.dart';
 
 class ListingStorageService {
