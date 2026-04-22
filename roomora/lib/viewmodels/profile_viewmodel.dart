@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/landlord_profile.dart';
 import '../services/api_service.dart';
+import '../services/local_storage_service.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final ApiService _apiService;
+  final LocalStorageService _storageService;
 
-  ProfileViewModel({required ApiService apiService}) : _apiService = apiService;
+  ProfileViewModel({
+    required ApiService apiService,
+    LocalStorageService? storageService,
+  }) : _apiService = apiService,
+       _storageService = storageService ?? LocalStorageService();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -137,6 +143,15 @@ class ProfileViewModel extends ChangeNotifier {
         _profilePhoto != null;
   }
 
+  Future<void> loadCachedProfile() async {
+    final cached = await _storageService.getProfile();
+    if (cached != null) {
+      _currentProfile = cached;
+      loadProfileToForm(cached);
+      notifyListeners();
+    }
+  }
+
   Future<LandlordProfile?> submitProfile() async {
     if (!validateForm()) {
       _errorMessage = 'Please fill in all required fields and add a photo';
@@ -164,8 +179,9 @@ class ProfileViewModel extends ChangeNotifier {
 
       final result = await _apiService.updateProfile(profileData);
       
-      _currentProfile = result;
+      await _storageService.saveProfile(result);
       
+      _currentProfile = result;
       _isLoading = false;
       notifyListeners();
       return _currentProfile;
@@ -199,6 +215,7 @@ class ProfileViewModel extends ChangeNotifier {
 
       final result = await _apiService.updateProfile(profileData);
       
+      await _storageService.saveProfile(result);
       _currentProfile = result;
       
       _errorMessage = null;

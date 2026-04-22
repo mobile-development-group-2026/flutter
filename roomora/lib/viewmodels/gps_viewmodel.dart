@@ -12,9 +12,9 @@ class GPSViewModel extends ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
   final SavedListingsService _savedListingsService = SavedListingsService();
   
-  String _studentId = 'dev_student_1';
+  final String _studentId = 'dev_student_1';
   List<SavedListing> _savedListings = [];
-  List<LocationAlert> _alerts = [];
+  final List<LocationAlert> _alerts = [];
   Position? _currentPosition;
   bool _isListening = false;
   String? _errorMessage;

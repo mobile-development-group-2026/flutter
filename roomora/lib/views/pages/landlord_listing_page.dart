@@ -3,11 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../viewmodels/listing_viewmodel.dart';
 import '../../services/api_service.dart';
+import '../../services/listing_storage_service.dart';
 import '../widgets/photo_upload_widget.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
 
-class LandlordListingPage extends StatelessWidget {
+class LandlordListingPage extends StatefulWidget {
   final String landlordId;
 
   const LandlordListingPage({
@@ -16,9 +17,26 @@ class LandlordListingPage extends StatelessWidget {
   });
 
   @override
+  State<LandlordListingPage> createState() => _LandlordListingPageState();
+}
+
+class _LandlordListingPageState extends State<LandlordListingPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      final viewModel = Provider.of<ListingViewModel>(context, listen: false);
+      viewModel.loadCachedListings();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ListingViewModel(apiService: ApiService()),
+      create: (_) => ListingViewModel(
+        apiService: ApiService(),
+        storageService: ListingStorageService(),
+      ),
       child: Scaffold(
         backgroundColor: const Color(0xFFFCFCFD),
         appBar: AppBar(
@@ -38,124 +56,125 @@ class LandlordListingPage extends StatelessWidget {
           ),
           centerTitle: true,
         ),
-        body: SafeArea(
-          child: Consumer<ListingViewModel>(
-            builder: (context, viewModel, child) {
-              return Stack(
-                children: [
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const ProgressIndicatorWidget(currentStep: 2, totalSteps: 3),
-                        const SizedBox(height: 24),
-                        
-                        RichText(
-                          text: const TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'New ',
-                                style: TextStyle(
-                                  color: Color(0xFF212327),
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.56,
-                                ),
+        body: Consumer<ListingViewModel>(
+          builder: (context, viewModel, child) {
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ProgressIndicatorWidget(currentStep: 2, totalSteps: 3),
+                      const SizedBox(height: 24),
+                      
+                      StreamBuilder<String>(
+                        stream: viewModel.progressStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7B5BF2).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              TextSpan(
-                                text: 'listing',
-                                style: TextStyle(
-                                  color: Color(0xFF7B5BF2),
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.56,
+                              child: Row(
+                                children: [
+                                  const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      snapshot.data!,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFF7B5BF2),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      
+                      StreamBuilder<List<String>>(
+                        stream: viewModel.photosStream,
+                        builder: (context, snapshot) {
+                          return PhotoUploadWidget(
+                            photos: snapshot.data ?? viewModel.photos,
+                            coverPhoto: viewModel.coverPhoto,
+                            onAddPhoto: (path) => viewModel.addPhoto(path),
+                            onRemovePhoto: (path) => viewModel.removePhoto(path),
+                            onSetCover: (path) => viewModel.setCoverPhoto(path),
+                          );
+                        },
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      _buildDetailsSection(viewModel),
+                      const SizedBox(height: 24),
+                      _buildPropertyTypeSection(viewModel),
+                      const SizedBox(height: 24),
+                      _buildLeaseAndDateSection(context, viewModel),
+                      const SizedBox(height: 24),
+                      _buildAmenitiesSection(viewModel),
+                      const SizedBox(height: 24),
+                      _buildHouseRulesSection(viewModel),
+                      const SizedBox(height: 24),
+                      _buildDescriptionSection(viewModel),
+                      const SizedBox(height: 32),
+                      
+                      if (viewModel.errorMessage != null)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.error, color: Colors.red.shade700, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  viewModel.errorMessage!,
+                                  style: TextStyle(color: Colors.red.shade700, fontSize: 13),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Fill in your property details. You can edit anytime before publishing.',
-                          style: TextStyle(
-                            color: Color(0xFF6E7681),
-                            fontSize: 14,
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-
-                        PhotoUploadWidget(
-                          photos: viewModel.photos,
-                          coverPhoto: viewModel.coverPhoto,
-                          onAddPhoto: () => viewModel.showImageSourceOptions(context),
-                          onRemovePhoto: (path) => viewModel.removePhoto(path),
-                          onSetCover: (path) => viewModel.setCoverPhoto(path),
-                          ),
-
-                        _buildDetailsSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildPropertyTypeSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildLeaseAndDateSection(context, viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildAmenitiesSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildHouseRulesSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildDescriptionSection(viewModel),
-                        const SizedBox(height: 32),
-
-                        if (viewModel.errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.shade200),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.error, color: Colors.red.shade700, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      viewModel.errorMessage!,
-                                      style: TextStyle(color: Colors.red.shade700, fontSize: 13),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                        _buildActionButtons(context, viewModel),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
+                      
+                      _buildActionButtons(context, viewModel),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  
-                  if (viewModel.isLoading)
-                    Container(
-                      color: Colors.black.withOpacity(0.3),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
-                        ),
+                ),
+                
+                if (viewModel.isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
                       ),
                     ),
-                ],
-              );
-            },
-          ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

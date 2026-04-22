@@ -5,7 +5,7 @@ import '../services/saved_listings_service.dart';
 class SavedListingsViewModel extends ChangeNotifier {
   final SavedListingsService _savedListingsService = SavedListingsService();
   
-  String _studentId = 'dev_student_1';
+  final String _studentId = 'dev_student_1';
   List<SavedListing> _savedListings = [];
   bool _isLoading = false;
   String? _errorMessage;

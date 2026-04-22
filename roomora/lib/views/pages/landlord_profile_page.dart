@@ -3,17 +3,36 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../services/api_service.dart';
+import '../../services/local_storage_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
+import '../widgets/cached_profile_image.dart';
 import 'landlord_listing_page.dart';
 
-class LandlordProfilePage extends StatelessWidget {
+class LandlordProfilePage extends StatefulWidget {
   const LandlordProfilePage({super.key});
+
+  @override
+  State<LandlordProfilePage> createState() => _LandlordProfilePageState();
+}
+
+class _LandlordProfilePageState extends State<LandlordProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+      viewModel.loadCachedProfile();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ProfileViewModel(apiService: ApiService()),
+      create: (_) => ProfileViewModel(
+        apiService: ApiService(),
+        storageService: LocalStorageService(),
+      ),
       child: Scaffold(
         backgroundColor: const Color(0xFFFCFCFD),
         appBar: AppBar(
@@ -33,112 +52,66 @@ class LandlordProfilePage extends StatelessWidget {
           ),
           centerTitle: true,
         ),
-        body: SafeArea(
-          child: Consumer<ProfileViewModel>(
-            builder: (context, viewModel, child) {
-              return Stack(
-                children: [
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const ProgressIndicatorWidget(currentStep: 1, totalSteps: 3),
-                        const SizedBox(height: 24),
-                        
-                        RichText(
-                          text: const TextSpan(
+        body: Consumer<ProfileViewModel>(
+          builder: (context, viewModel, child) {
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ProgressIndicatorWidget(currentStep: 1, totalSteps: 3),
+                      const SizedBox(height: 24),
+                      _buildPhotoSection(context, viewModel),
+                      const SizedBox(height: 32),
+                      _buildBioSection(viewModel),
+                      const SizedBox(height: 24),
+                      _buildNameSection(viewModel),
+                      const SizedBox(height: 16),
+                      _buildEmailSection(viewModel),
+                      const SizedBox(height: 16),
+                      _buildPhoneSection(viewModel),
+                      const SizedBox(height: 32),
+                      if (viewModel.errorMessage != null)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.shade200),
+                          ),
+                          child: Row(
                             children: [
-                              TextSpan(
-                                text: 'Build your\n',
-                                style: TextStyle(
-                                  color: Color(0xFF212327),
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.64,
-                                ),
-                              ),
-                              TextSpan(
-                                text: 'profile',
-                                style: TextStyle(
-                                  color: Color(0xFF7B5BF2),
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.64,
+                              Icon(Icons.error, color: Colors.red.shade700, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  viewModel.errorMessage!,
+                                  style: TextStyle(color: Colors.red.shade700, fontSize: 13),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'A great profile gets you 3× more matches.',
-                          style: TextStyle(
-                            color: Color(0xFF6E7681),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-
-                        _buildPhotoSection(context, viewModel),
-                        const SizedBox(height: 32),
-
-                        _buildBioSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildNameSection(viewModel),
-                        const SizedBox(height: 16),
-
-                        _buildEmailSection(viewModel),
-                        const SizedBox(height: 16),
-                        
-                        _buildPhoneSection(viewModel),
-                        const SizedBox(height: 32),
-
-                        if (viewModel.errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.shade200),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.error, color: Colors.red.shade700, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      viewModel.errorMessage!,
-                                      style: TextStyle(color: Colors.red.shade700, fontSize: 13),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                        _buildContinueButton(context, viewModel),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
+                      _buildContinueButton(context, viewModel),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  
-                  if (viewModel.isLoading)
-                    Container(
-                      color: Colors.black.withOpacity(0.3),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
-                        ),
+                ),
+                if (viewModel.isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
                       ),
                     ),
-                ],
-              );
-            },
-          ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -169,45 +142,30 @@ class LandlordProfilePage extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Center(
-                  child: ClipOval(
-                    child: viewModel.profilePhoto != null
-                        ? (viewModel.selectedImage != null
-                            ? Image.file(
-                                File(viewModel.selectedImage!.path),
-                                width: 84,
-                                height: 84,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(
-                                viewModel.profilePhoto!,
-                                width: 84,
-                                height: 84,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 84,
-                                    height: 84,
-                                    color: Colors.white,
-                                    child: const Icon(
-                                      Icons.person,
-                                      size: 48,
-                                      color: Color(0xFF7B5BF2),
-                                    ),
-                                  );
-                                },
-                              ))
-                        : Container(
-                            width: 84,
-                            height: 84,
-                            color: Colors.white,
-                            child: const Icon(
-                              Icons.person,
-                              size: 48,
-                              color: Color(0xFF7B5BF2),
-                            ),
+                child: ClipOval(
+                  child: viewModel.profilePhoto != null
+                      ? (viewModel.selectedImage != null
+                          ? Image.file(
+                              File(viewModel.selectedImage!.path),
+                              width: 84,
+                              height: 84,
+                              fit: BoxFit.cover,
+                            )
+                          : CachedProfileImage(
+                              imageUrl: viewModel.profilePhoto!,
+                              width: 84,
+                              height: 84,
+                            ))
+                      : Container(
+                          width: 84,
+                          height: 84,
+                          color: Colors.white,
+                          child: const Icon(
+                            Icons.person,
+                            size: 48,
+                            color: Color(0xFF7B5BF2),
                           ),
-                  ),
+                        ),
                 ),
               ),
               if (viewModel.profilePhoto == null)
@@ -302,7 +260,7 @@ class LandlordProfilePage extends StatelessWidget {
             controller: viewModel.bioController,
             maxLines: 5,
             decoration: const InputDecoration(
-              hintText: 'Tell potential tenants about yourself, your properties, and your hosting style...',
+              hintText: 'Tell potential tenants about yourself...',
               border: InputBorder.none,
               contentPadding: EdgeInsets.all(16),
             ),
@@ -432,30 +390,35 @@ class LandlordProfilePage extends StatelessWidget {
   }
 
   Widget _buildContinueButton(BuildContext context, ProfileViewModel viewModel) {
-  return CustomButton(
-    text: 'Continue',
-    onPressed: () async {
-      print('Boton Continue presionado');
-      final profile = await viewModel.submitProfile();
-      if (profile != null) {
-        print('Perfil creado, navegando...');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => LandlordListingPage(landlordId: profile.id.toString()),
-          ),
-        );
-      } else if (viewModel.errorMessage != null) {
-        print('Error: ${viewModel.errorMessage}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(viewModel.errorMessage!),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    },
-    isPrimary: true,
-  );
-}
+    return CustomButton(
+      text: 'Continue',
+      onPressed: () async {
+        final profile = await viewModel.submitProfile();
+        if (profile != null) {
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LandlordListingPage(landlordId: profile.id.toString()),
+              ),
+            );
+          }
+        } else if (viewModel.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(viewModel.errorMessage!),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: 'OK',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
+            ),
+          );
+        }
+      },
+      isPrimary: true,
+    );
+  }
 }

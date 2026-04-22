@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/location_alert.dart';
-import '../../utils/location_calculator.dart';
 
 class LocationAlertCard extends StatelessWidget {
   final LocationAlert alert;
