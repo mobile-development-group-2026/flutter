@@ -5,6 +5,7 @@ import '/../theme/colors.dart';
 import '/../viewmodels/listing_viewmodel.dart';
 import '/../models/listing.dart';
 import 'map_page.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
@@ -20,8 +21,18 @@ class _DiscoverPageState extends State<DiscoverPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ListingViewModel>().loadLandlordListings();
+      _cargarListings();
     });
+  }
+
+  Future<void> _cargarListings() async {
+    final auth = ClerkAuth.of(context, listen: false);
+    final tokenObj = await auth.sessionToken();
+    final token = tokenObj?.jwt;
+
+    if (token != null && mounted) {
+      context.read<ListingViewModel>().loadLandlordListings(token);
+    }
   }
 
   @override
@@ -61,7 +72,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                           ),
                           const SizedBox(height: 16),
                           TextButton(
-                            onPressed: () => vm.loadLandlordListings(),
+                            onPressed: () => _cargarListings(),
                             child: Text(
                               'Reintentar',
                               style: TextStyle(

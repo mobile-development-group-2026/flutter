@@ -24,6 +24,7 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   lucide_icons_flutter: ^1.0.0
+  clerk_flutter: ^0.0.14-beta
 
 dev_dependencies:
   flutter_test:

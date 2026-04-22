@@ -31,7 +31,7 @@ class LandlordProfile {
 
   factory LandlordProfile.fromJson(Map<String, dynamic> json) {
     return LandlordProfile(
-      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      id: json['id'].toString(),
       bio: json['bio'],
       profilePhoto: json['avatar_url'] ?? json['profile_photo'],
       firstName: json['first_name'] ?? '',
