@@ -78,48 +78,48 @@
       return fetchProfile(token: token);
     }
 
-    Future<LandlordProfile> updateProfile(
-      Map<String, dynamic> profileData, {
-      required String token,
-    }) async {
-      final userData = {
-        'user': {
-          'first_name': profileData['firstName'],
-          'last_name': profileData['lastName'],
-          'phone': profileData['phone'],
-          'avatar_url': profileData['profilePhoto'],
-          'onboarded': true,
-        }
-      };
+    // Future<LandlordProfile> updateProfile(
+    //   Map<String, dynamic> profileData, {
+    //   required String token,
+    // }) async {
+    //   final userData = {
+    //     'user': {
+    //       'first_name': profileData['firstName'],
+    //       'last_name': profileData['lastName'],
+    //       'phone': profileData['phone'],
+    //       'avatar_url': profileData['profilePhoto'],
+    //       'onboarded': true,
+    //     }
+    //   };
 
-      final response = await _client.patch(
-        Uri.parse('$baseUrl/profile'),
-        headers: _headers(token),
-        body: json.encode(userData),
-      );
+    //   final response = await _client.patch(
+    //     Uri.parse('$baseUrl/profile'),
+    //     headers: _headers(token),
+    //     body: json.encode(userData),
+    //   );
 
-      if (response.statusCode == 200) {
-        final body = json.decode(response.body) as Map<String, dynamic>;
-        final userJson = _unwrap(body);
-        return LandlordProfile(
-          id: userJson['id']?.toString() ?? '',
-          bio: profileData['bio'],
-          profilePhoto: userJson['avatar_url'],
-          firstName: userJson['first_name'] ?? '',
-          lastName: userJson['last_name'] ?? '',
-          email: userJson['email'] ?? '',
-          phone: userJson['phone'],
-          university: null,
-          verified: userJson['verified'] ?? false,
-          role: userJson['role'] ?? 'landlord',
-          clerkId: userJson['clerk_id'] ?? '',
-          createdAt: DateTime.parse(userJson['created_at']),
-          updatedAt: DateTime.parse(userJson['updated_at']),
-        );
-      }
+    //   if (response.statusCode == 200) {
+    //     final body = json.decode(response.body) as Map<String, dynamic>;
+    //     final userJson = _unwrap(body);
+    //     return LandlordProfile(
+    //       id: userJson['id']?.toString() ?? '',
+    //       bio: profileData['bio'],
+    //       profilePhoto: userJson['avatar_url'],
+    //       firstName: userJson['first_name'] ?? '',
+    //       lastName: userJson['last_name'] ?? '',
+    //       email: userJson['email'] ?? '',
+    //       phone: userJson['phone'],
+    //       university: null,
+    //       verified: userJson['verified'] ?? false,
+    //       role: userJson['role'] ?? 'landlord',
+    //       clerkId: userJson['clerk_id'] ?? '',
+    //       createdAt: DateTime.parse(userJson['created_at']),
+    //       updatedAt: DateTime.parse(userJson['updated_at']),
+    //     );
+    //   }
 
-      throw Exception('updateProfile ${response.statusCode}: ${response.body}');
-    }
+    //   throw Exception('updateProfile ${response.statusCode}: ${response.body}');
+    // }
 
     Future<List<ApiListing>> getListings({
       required String token,
@@ -278,4 +278,57 @@
         throw Exception('deletePhoto ${response.statusCode}: ${response.body}');
       }
     }
+
+    Future<void> patchProfile(
+    String path,
+    String key,
+    Map<String, dynamic> fields, {
+    required String token,
+  }) async {
+    final response = await _client.patch(
+      Uri.parse('$baseUrl$path'),
+      headers: _headers(token),
+      body: json.encode({key: fields}),
+    );
+ 
+    if (response.statusCode != 200) {
+      final decoded = json.decode(response.body) as Map<String, dynamic>;
+      throw Exception('patchProfile $path ${response.statusCode}: ${decoded['error']}');
+    }
   }
+ 
+  Future<void> createListingRaw(
+    Map<String, dynamic> fields, {
+    required String token,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/listings'),
+      headers: _headers(token),
+      body: json.encode({'listing': fields}),
+    );
+ 
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      final decoded = json.decode(response.body) as Map<String, dynamic>;
+      throw Exception('createListingRaw ${response.statusCode}: ${decoded['error']}');
+    }
+  }
+ 
+  Future<LandlordProfile> updateProfile(
+  Map<String, dynamic> fields, {
+  required String token,
+}) async {
+  final response = await _client.patch(
+    Uri.parse('$baseUrl/profile'),
+    headers: _headers(token),
+    body: json.encode({'user': fields}),
+  );
+
+  if (response.statusCode == 200) {
+    final body = json.decode(response.body) as Map<String, dynamic>;
+    return LandlordProfile.fromJson(_unwrap(body)); // ¡Usa tu modelo!
+  }
+
+  throw Exception('updateProfile ${response.statusCode}: ${response.body}');
+}
+
+}

@@ -15,6 +15,7 @@ import 'views/pages/landlord_listing_page.dart';
 import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'views/pages/landlord_profile_page.dart';
 import 'views/pages/landing_page.dart';
+import 'views/pages/Onboarding/onboarding_page.dart';
 
 void main() {
   runApp(const RoomoraApp());
@@ -150,10 +151,10 @@ class _RootViewState extends State<RootView> {
 
 
     if (!session.isOnboarded) {
-      return const Placeholder(); // reemplazá con OnboardingView()
+      return const OnboardingView(); 
     }
 
-    return const Placeholder();
+    return const DiscoverPage();
   }
 
   void _startLoad(ClerkAuthState auth, UserSession session) {
@@ -168,94 +169,6 @@ class _RootViewState extends State<RootView> {
     });
   }
 }
-
-
-// class LandingView extends StatelessWidget {
-//   const LandingView({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColors.neutral100,
-//       body: SafeArea(
-//         child: Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: 24),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               const Spacer(flex: 2),
-
-//               // Logo / ilustración
-//               Container(
-//                 width: 60,
-//                 height: 60,
-//                 decoration: BoxDecoration(
-//                   gradient: const LinearGradient(
-//                     colors: [AppColors.purple500, AppColors.purple700],
-//                   ),
-//                   borderRadius: BorderRadius.circular(16),
-//                 ),
-//                 child: const Icon(Icons.home_rounded,
-//                     color: Colors.white, size: 30),
-//               ),
-//               const SizedBox(height: 24),
-
-//               // Header
-//               const Text(
-//                 'Encontrá tu\nlugar perfecto.',
-//                 style: TextStyle(
-//                   fontSize: 36,
-//                   fontWeight: FontWeight.w700,
-//                   color: AppColors.neutral900,
-//                   fontFamily: 'Sora',
-//                   letterSpacing: -0.8,
-//                   height: 1.1,
-//                 ),
-//               ),
-//               const SizedBox(height: 12),
-//               const Text(
-//                 'La forma más inteligente de\nencontrar housing estudiantil.',
-//                 style: TextStyle(
-//                   fontSize: 16,
-//                   color: AppColors.neutral700,
-//                   fontFamily: 'Sora',
-//                   height: 1.5,
-//                 ),
-//               ),
-
-//               const Spacer(flex: 3),
-
-              
-//               _GradientButton(
-//                 text: 'Iniciar sesión',
-//                 onPressed: () => showModalBottomSheet(
-//                   context: context,
-//                   isScrollControlled: true,
-//                   backgroundColor: Colors.white,
-//                   shape: const RoundedRectangleBorder(
-//                     borderRadius:
-//                         BorderRadius.vertical(top: Radius.circular(24)),
-//                   ),
-//                   builder: (_) => const SignInView(),
-//                 ),
-//               ),
-//               const SizedBox(height: 12),
-
-//               // Botón Sign Up → push screen (igual que Swift)
-//               _OutlineButton(
-//                 text: 'Crear cuenta gratis',
-//                 onPressed: () => Navigator.of(context).push(
-//                     MaterialPageRoute(builder: (_) => const SignUpView())),
-//               ),
-//               const SizedBox(height: 32),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 
 class _RetryView extends StatelessWidget {
   final VoidCallback onRetry;

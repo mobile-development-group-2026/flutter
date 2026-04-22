@@ -9,7 +9,7 @@ class SignInViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
-  String get buttonTitle => isLoading ? 'Signing in...' : 'Sign In  →';
+  String get buttonTitle => isLoading ? 'Signing in...' : 'Sign In';
 
   Future<bool> signIn(ClerkAuthState auth, UserSession session) async {
     isLoading = true;
