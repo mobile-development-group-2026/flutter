@@ -43,6 +43,8 @@ class RoomoraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserSession()),
       ],
       child: ClerkAuth(
+        //clerk Andy: pk_test_ZXZvbHZpbmctZ2VsZGluZy02MS5jbGVyay5hY2NvdW50cy5kZXYk
+        //clerk Esteban: pk_test_YnVyc3RpbmctaGFnZmlzaC05NC5jbGVyay5hY2NvdW50cy5kZXYk
         config: ClerkAuthConfig(publishableKey: 'pk_test_YnVyc3RpbmctaGFnZmlzaC05NC5jbGVyay5hY2NvdW50cy5kZXYk'),
         child: MaterialApp(
           title: 'Roomora',

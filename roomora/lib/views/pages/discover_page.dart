@@ -6,6 +6,7 @@ import '/../viewmodels/listing_viewmodel.dart';
 import '/../models/listing.dart';
 import 'map_page.dart';
 import 'package:clerk_flutter/clerk_flutter.dart';
+import '/../../models/user_session.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
@@ -713,7 +714,20 @@ class _DiscoverPageState extends State<DiscoverPage> {
           _navItem(icon: LucideIcons.clipboardList, label: 'Activity'),
           _navItem(
               icon: LucideIcons.messageCircle, label: 'Messages', badge: 3),
-          _navItem(icon: LucideIcons.user, label: 'Profile'),
+          _navItem(
+            icon: LucideIcons.user,
+            label: 'Profile',
+            onTap: () async {
+              // 1. Cerramos sesión en Clerk
+              await ClerkAuth.of(context, listen: false).signOut();
+              
+              // 2. Usamos el 'mounted' del Estado en lugar de context.mounted
+              if (!mounted) return;
+              
+              // 3. Limpiamos tu estado local
+              context.read<UserSession>().clear();
+            },
+          ),
         ],
       ),
     );

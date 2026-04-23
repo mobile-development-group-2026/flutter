@@ -11,6 +11,7 @@ import 'roommate_preferences_page.dart';
 import 'listing_preferences_page.dart';
 import 'new_listing_page.dart';
 import 'onboarding_complete_page.dart';
+import '../discover_page.dart';
 
 
 class OnboardingView extends StatefulWidget {
@@ -52,7 +53,12 @@ class _OnboardingViewState extends State<OnboardingView> {
       return OnboardingCompleteView(
         firstName: _vm.completedProfile?.firstName ?? 'there',
         role: _vm.completedProfile?.role ?? 'student',
-        onContinue: () => _vm.finishOnboarding(session),
+        onContinue: () {
+          _vm.finishOnboarding(session);
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DiscoverPage()), 
+          );
+        },
       );
     }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../theme/colors.dart';
 import '/../../viewmodels/Onboarding/onboarding_viewmodel.dart';
-
+import 'dart:io';
 class BuildYourProfileView extends StatelessWidget {
   final BuildYourProfileViewModel vm;
   final String role;
@@ -86,7 +86,7 @@ class BuildYourProfileView extends StatelessWidget {
 
               _OnboardingField(
                 label: 'BIO',
-                hint: 'Contanos sobre vos, tus intereses, qué estudiás...',
+                hint: 'tell us about yourself, what you study...',
                 maxLines: 4,
                 onChanged: (v) { vm.bio = v; vm.notifyListeners(); },
               ),
@@ -144,20 +144,75 @@ class _PhotoPicker extends StatelessWidget {
   final BuildYourProfileViewModel vm;
   final bool isStudent;
 
-  const _PhotoPicker({required this.vm, required this.isStudent});
+  const _PhotoPicker({super.key, required this.vm, required this.isStudent});
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: source,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+    
+    if (image != null) {
+      vm.profilePhotoPath = image.path;
+      vm.notifyListeners();
+    }
+  }
+
+  void _showImageOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (BuildContext ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt_outlined, color: AppColors.neutral700),
+                  title: const Text('Tomar foto', 
+                      style: TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, color: AppColors.neutral900)),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined, color: AppColors.neutral700),
+                  title: const Text('Elegir de la galería', 
+                      style: TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, color: AppColors.neutral900)),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () async {
-        final picker = ImagePicker();
-        final image = await picker.pickImage(
-            source: ImageSource.gallery, maxWidth: 800, maxHeight: 800);
-        if (image != null) {
-          vm.profilePhotoPath = image.path;
-          vm.notifyListeners();
-        }
-      },
+      onTap: () => _showImageOptions(context),
       child: Row(
         children: [
           Stack(
@@ -166,11 +221,10 @@ class _PhotoPicker extends StatelessWidget {
                 radius: 40,
                 backgroundColor: AppColors.neutral300,
                 backgroundImage: vm.profilePhotoPath != null
-                    ? NetworkImage(vm.profilePhotoPath!) // or FileImage
+                    ? FileImage(File(vm.profilePhotoPath!)) as ImageProvider
                     : null,
                 child: vm.profilePhotoPath == null
-                    ? const Icon(Icons.person,
-                        size: 36, color: AppColors.neutral500)
+                    ? const Icon(Icons.person, size: 36, color: AppColors.neutral500)
                     : null,
               ),
               Positioned(
@@ -183,8 +237,7 @@ class _PhotoPicker extends StatelessWidget {
                     color: AppColors.purple500,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.add,
-                      color: Colors.white, size: 14),
+                  child: const Icon(Icons.add, color: Colors.white, size: 14),
                 ),
               ),
             ],

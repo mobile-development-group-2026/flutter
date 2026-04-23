@@ -225,6 +225,14 @@ class OnboardingViewModel extends ChangeNotifier {
   final listingPrefs = ListingPreferencesViewModel();
   final newListing = NewListingViewModel();
 
+  OnboardingViewModel() {
+    buildProfile.addListener(notifyListeners);
+    situation.addListener(notifyListeners);
+    preferences.addListener(notifyListeners);
+    listingPrefs.addListener(notifyListeners);
+    newListing.addListener(notifyListeners);
+  }
+
   bool get canContinue => switch (step) {
         0 => buildProfile.canContinue,
         1 => isLandlord ? newListing.canContinue : situation.canContinue,

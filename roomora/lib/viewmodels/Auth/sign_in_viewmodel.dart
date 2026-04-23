@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:clerk_flutter/clerk_flutter.dart';
-import 'package:clerk_auth/clerk_auth.dart' as clerk;
+import 'package:clerk_auth/clerk_auth.dart';
 import '/../models/user_session.dart';
 
 class SignInViewModel extends ChangeNotifier {
@@ -15,10 +15,9 @@ class SignInViewModel extends ChangeNotifier {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
-
     try {
       await auth.attemptSignIn(
-        strategy: clerk.Strategy.password,
+        strategy: Strategy.password,
         identifier: email,
         password: password,
       );
