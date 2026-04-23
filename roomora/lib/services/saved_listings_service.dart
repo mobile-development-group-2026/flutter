@@ -22,8 +22,6 @@ class SavedListingsService {
         Uri.parse('$baseUrl/students/$studentId/saved_listings'),
         headers: headers,
       );
-
-      print('SavedListings response: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
@@ -32,7 +30,6 @@ class SavedListingsService {
         throw Exception('Failed to load saved listings: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting saved listings: $e');
       rethrow;
     }
   }
@@ -51,7 +48,6 @@ class SavedListingsService {
         throw Exception('Failed to mark listing as visited: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error marking listing as visited: $e');
       rethrow;
     }
   }
@@ -65,7 +61,6 @@ class SavedListingsService {
         body: json.encode({'distance': distance}),
       );
     } catch (e) {
-      print('Error updating distance: $e');
       rethrow;
     }
   }

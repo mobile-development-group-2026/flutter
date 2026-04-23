@@ -33,7 +33,7 @@ class LocationAlertCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: alert.read 
                         ? const Color(0xFFE4E7EC) 
-                        : const Color(0xFF7B5BF2).withOpacity(0.1),
+                        : const Color(0xFF7B5BF2).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(

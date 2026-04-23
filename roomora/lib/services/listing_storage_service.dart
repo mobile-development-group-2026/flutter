@@ -39,7 +39,7 @@ class ListingStorageService {
       
       if (ageMinutes <= _maxCacheAgeMinutes) {
         final List<String> listingsJson = List<String>.from(cachedData);
-        return listingsJson.map((json) => Listing.fromJson(json.decode(json))).toList();
+        return listingsJson.map((jsonString) => Listing.fromJson(json.decode(jsonString))).toList();
       }
     }
     return [];
@@ -47,24 +47,27 @@ class ListingStorageService {
 
   Future<void> saveSingleListing(Listing listing) async {
     await init();
-    await _listingsBox?.put('listing_${listing.id}', json.encode(listing.toJson()));
+    final key = 'listing_${listing.id}';
+    await _listingsBox?.put(key, json.encode(listing.toJson()));
   }
 
   Future<Listing?> getSingleListing(String id) async {
     await init();
-    final cached = _listingsBox?.get('listing_$id');
+    final key = 'listing_$id';
+    final cached = _listingsBox?.get(key);
     if (cached != null) {
       return Listing.fromJson(json.decode(cached));
     }
     return null;
   }
 
-  Future<void> deleteListing(String id) async {
+  Future<void> deleteListing(int id) async {
     await init();
-    await _listingsBox?.delete('listing_$id');
+    final key = 'listing_$id';
+    await _listingsBox?.delete(key);
     
     final allListings = await getCachedListings();
-    final updatedListings = allListings.where((l) => l.id.toString() != id).toList();
+    final updatedListings = allListings.where((l) => l.id != id).toList();
     await saveListings(updatedListings);
   }
 

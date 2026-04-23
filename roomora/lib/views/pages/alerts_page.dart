@@ -80,7 +80,7 @@ class AlertsPage extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: const Color(0xFF7B5BF2).withOpacity(0.1),
+                color: const Color(0xFF7B5BF2).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -141,7 +141,7 @@ class AlertsPage extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFFE4E7EC).withOpacity(0.5),
+              color: const Color(0xFFE4E7EC).withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -197,7 +197,7 @@ class AlertsPage extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFFE4E7EC).withOpacity(0.5),
+              color: const Color(0xFFE4E7EC).withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: const Icon(

@@ -345,11 +345,11 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   decoration: BoxDecoration(
                     color: AppColors.yellow500.withValues(alpha: 0.95),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Icon(Icons.bolt, size: 14, color: Colors.white),
-                      const SizedBox(width: 4),
-                      const Text(
+                      Icon(Icons.bolt, size: 14, color: Colors.white),
+                      SizedBox(width: 4),
+                      Text(
                         'Flash sale — 15% off first month',
                         style: TextStyle(
                           fontFamily: 'Sora',

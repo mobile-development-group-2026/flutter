@@ -20,9 +20,21 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
       viewModel.loadCachedProfile();
+      viewModel.nameController.addListener(() {
+        viewModel.validateField('name', viewModel.nameController.text);
+      });
+      viewModel.emailController.addListener(() {
+        viewModel.validateField('email', viewModel.emailController.text);
+      });
+      viewModel.phoneController.addListener(() {
+        viewModel.validateField('phone', viewModel.phoneController.text);
+      });
+      viewModel.bioController.addListener(() {
+        viewModel.validateField('bio', viewModel.bioController.text);
+      });
     });
   }
 
@@ -63,6 +75,35 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
                     children: [
                       const ProgressIndicatorWidget(currentStep: 1, totalSteps: 3),
                       const SizedBox(height: 24),
+                      
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0ECFE),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF7B5BF2).withValues(alpha: 0.3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Required Fields',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF7B5BF2),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              '• Full name\n• Email address\n• Phone number\n• Bio (minimum 20 characters)\n• Profile photo',
+                              style: TextStyle(fontSize: 12, color: Color(0xFF6E7681)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
                       _buildPhotoSection(context, viewModel),
                       const SizedBox(height: 32),
                       _buildBioSection(viewModel),
@@ -73,6 +114,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
                       const SizedBox(height: 16),
                       _buildPhoneSection(viewModel),
                       const SizedBox(height: 32),
+                      
                       if (viewModel.errorMessage != null)
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -95,14 +137,16 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
                             ],
                           ),
                         ),
+                      
                       _buildContinueButton(context, viewModel),
                       const SizedBox(height: 20),
                     ],
                   ),
                 ),
+                
                 if (viewModel.isLoading)
                   Container(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     child: const Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
@@ -117,114 +161,158 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     );
   }
 
+  Widget _buildErrorText(String? error) {
+    if (error == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, left: 12),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, size: 14, color: Colors.red.shade700),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              error,
+              style: TextStyle(fontSize: 11, color: Colors.red.shade700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPhotoSection(BuildContext context, ProfileViewModel viewModel) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: () => viewModel.showImageSourceOptions(context),
-          child: Stack(
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF9E82F7), Color(0xFF6244D4)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF7B5BF2).withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ClipOval(
-                  child: viewModel.profilePhoto != null
-                      ? (viewModel.selectedImage != null
-                          ? Image.file(
-                              File(viewModel.selectedImage!.path),
-                              width: 84,
-                              height: 84,
-                              fit: BoxFit.cover,
-                            )
-                          : CachedProfileImage(
-                              imageUrl: viewModel.profilePhoto!,
-                              width: 84,
-                              height: 84,
-                            ))
-                      : Container(
-                          width: 84,
-                          height: 84,
-                          color: Colors.white,
-                          child: const Icon(
-                            Icons.person,
-                            size: 48,
-                            color: Color(0xFF7B5BF2),
-                          ),
-                        ),
-                ),
+        Row(
+          children: [
+            const Text(
+              'PROFILE PHOTO',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
               ),
-              if (viewModel.profilePhoto == null)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 28,
-                    height: 28,
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () => viewModel.showImageSourceOptions(context),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 88,
+                    height: 88,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF7B5BF2),
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        width: 2,
-                        color: const Color(0xFFFCFCFD),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF9E82F7), Color(0xFF6244D4)],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B5BF2).withOpacity(0.4),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: const Color(0xFF7B5BF2).withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.add,
-                      size: 16,
-                      color: Colors.white,
+                    child: ClipOval(
+                      child: viewModel.profilePhoto != null
+                          ? (viewModel.selectedImage != null
+                              ? Image.file(
+                                  File(viewModel.selectedImage!.path),
+                                  width: 84,
+                                  height: 84,
+                                  fit: BoxFit.cover,
+                                )
+                              : CachedProfileImage(
+                                  imageUrl: viewModel.profilePhoto!,
+                                  width: 84,
+                                  height: 84,
+                                ))
+                          : Container(
+                              width: 84,
+                              height: 84,
+                              color: Colors.white,
+                              child: const Icon(
+                                Icons.person,
+                                size: 48,
+                                color: Color(0xFF7B5BF2),
+                              ),
+                            ),
                     ),
                   ),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Profile photo',
-                style: TextStyle(
-                  color: Color(0xFF212327),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                  if (viewModel.profilePhoto == null)
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7B5BF2),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            width: 2,
+                            color: const Color(0xFFFCFCFD),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF7B5BF2).withValues(alpha: 0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'A clear photo helps landlords and roommates feel confident about you.',
-                style: TextStyle(
-                  color: Color(0xFFB0B6BF),
-                  fontSize: 12,
-                  height: 1.4,
-                ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Profile photo',
+                    style: TextStyle(
+                      color: Color(0xFF212327),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'A clear photo helps landlords and roommates feel confident about you.',
+                    style: TextStyle(
+                      color: Color(0xFFB0B6BF),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+        _buildErrorText(viewModel.fieldErrors['photo']),
       ],
     );
   }
@@ -233,14 +321,27 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            const Text(
+              'BIO',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
         const Text(
-          'BIO',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
+          'Minimum 20 characters. Tell us about yourself and your properties.',
+          style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
         ),
         const SizedBox(height: 8),
         Container(
@@ -250,7 +351,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             border: Border.all(color: const Color(0xFFE4E7EC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -266,6 +367,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             ),
           ),
         ),
+        _buildErrorText(viewModel.fieldErrors['bio']),
       ],
     );
   }
@@ -274,13 +376,22 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'FULL NAME',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+        Row(
+          children: [
+            const Text(
+              'FULL NAME',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Container(
@@ -290,7 +401,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             border: Border.all(color: const Color(0xFFE4E7EC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -305,6 +416,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             ),
           ),
         ),
+        _buildErrorText(viewModel.fieldErrors['name']),
       ],
     );
   }
@@ -313,13 +425,22 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'EMAIL',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+        Row(
+          children: [
+            const Text(
+              'EMAIL',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Container(
@@ -329,7 +450,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             border: Border.all(color: const Color(0xFFE4E7EC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -339,12 +460,13 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             controller: viewModel.emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
-              hintText: 'john@example.com',
+              hintText: 'name@example.com',
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
           ),
         ),
+        _buildErrorText(viewModel.fieldErrors['email']),
       ],
     );
   }
@@ -353,13 +475,22 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'PHONE',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+        Row(
+          children: [
+            const Text(
+              'PHONE',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Container(
@@ -369,7 +500,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             border: Border.all(color: const Color(0xFFE4E7EC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -385,6 +516,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
             ),
           ),
         ),
+        _buildErrorText(viewModel.fieldErrors['phone']),
       ],
     );
   }
@@ -392,31 +524,36 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
   Widget _buildContinueButton(BuildContext context, ProfileViewModel viewModel) {
     return CustomButton(
       text: 'Continue',
-      onPressed: () async {
-        final profile = await viewModel.submitProfile();
-        if (profile != null) {
-          if (mounted) {
+      onPressed: () {
+        if (!viewModel.validateForm()) {
+          viewModel.showValidationAlert(context);
+          return;
+        }
+        
+        viewModel.submitProfile().then((profile) {
+          if (!mounted) return;
+          if (profile != null && context.mounted) {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => LandlordListingPage(landlordId: profile.id.toString()),
               ),
             );
-          }
-        } else if (viewModel.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(viewModel.errorMessage!),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-              action: SnackBarAction(
-                label: 'OK',
-                textColor: Colors.white,
-                onPressed: () {},
+          } else if (viewModel.errorMessage != null && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(viewModel.errorMessage!),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+                action: SnackBarAction(
+                  label: 'OK',
+                  textColor: Colors.white,
+                  onPressed: () {},
+                ),
               ),
-            ),
-          );
-        }
+            );
+          }
+        });
       },
       isPrimary: true,
     );

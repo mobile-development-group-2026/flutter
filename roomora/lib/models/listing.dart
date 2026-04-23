@@ -1,5 +1,5 @@
 class Listing {
-  final String id;
+  final int id;
   final String title;
   final String listingType;
   final String description;
@@ -21,7 +21,7 @@ class Listing {
   final bool petsAllowed;
   final bool partiesAllowed;
   final bool smokingAllowed;
-  final String userId;
+  final int userId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -54,59 +54,37 @@ class Listing {
   });
 
   factory Listing.fromJson(Map<String, dynamic> json) {
-    DateTime parseDate(dynamic dateValue) {
-      if (dateValue == null) return DateTime.now();
-      if (dateValue is DateTime) return dateValue;
-      if (dateValue is String) {
-        return DateTime.parse(dateValue);
-      }
-      return DateTime.now();
-    }
-
-    double parseDouble(dynamic value) {
-      if (value == null) return 0.0;
-      if (value is double) return value;
-      if (value is int) return value.toDouble();
-      if (value is String) return double.parse(value);
-      return 0.0;
-    }
-
     return Listing(
-      id: json['id']?.toString() ?? '',
-      title: json['title'] ?? '',
-      listingType: json['listing_type'] ?? json['listingType'] ?? '',
-      description: json['description'] ?? '',
-      propertyType: json['property_type'] ?? json['propertyType'] ?? '',
-      address: json['address'] ?? '',
-      city: json['city'] ?? '',
-      state: json['state'] ?? '',
-      zipCode: json['zip_code'] ?? json['zipCode'] ?? '',
-      latitude: parseDouble(json['latitude']),
-      longitude: parseDouble(json['longitude']),
-      rent: parseDouble(json['rent']),
-      securityDeposit: parseDouble(json['security_deposit'] ?? json['securityDeposit']),
-      utilitiesIncluded: json['utilities_included'] ?? json['utilitiesIncluded'] ?? false,
-      utilitiesCost: json['utilities_cost'] != null ? parseDouble(json['utilities_cost']) : null,
-      availableDate: json['available_date'] != null 
-          ? DateTime.parse(json['available_date']) 
-          : (json['availableDate'] != null 
-              ? DateTime.parse(json['availableDate']) 
-              : DateTime.now()),
-      leaseTermMonths: json['lease_term_months'] ?? json['leaseTermMonths'] ?? 0,
-      bedrooms: json['bedrooms'] ?? 0,
-      bathrooms: json['bathrooms'] ?? 0,
-      petsAllowed: json['pets_allowed'] ?? json['petsAllowed'] ?? false,
-      partiesAllowed: json['parties_allowed'] ?? json['partiesAllowed'] ?? false,
-      smokingAllowed: json['smoking_allowed'] ?? json['smokingAllowed'] ?? false,
-      userId: json['user_id']?.toString() ?? json['userId']?.toString() ?? '',
-      createdAt: parseDate(json['created_at'] ?? json['createdAt']),
-      updatedAt: parseDate(json['updated_at'] ?? json['updatedAt']),
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      listingType: json['listing_type'] as String? ?? 'property',
+      description: json['description'] as String? ?? '',
+      propertyType: json['property_type'] as String? ?? 'apartment',
+      address: json['address'] as String? ?? '',
+      city: json['city'] as String? ?? '',
+      state: json['state'] as String? ?? '',
+      zipCode: json['zip_code'] as String? ?? '',
+      latitude: (json['latitude'] as num? ?? 0).toDouble(),
+      longitude: (json['longitude'] as num? ?? 0).toDouble(),
+      rent: (json['rent'] as num? ?? 0).toDouble(),
+      securityDeposit: (json['security_deposit'] as num? ?? 0).toDouble(),
+      utilitiesIncluded: json['utilities_included'] as bool? ?? false,
+      utilitiesCost: (json['utilities_cost'] as num?)?.toDouble(),
+      availableDate: DateTime.parse(json['available_date'] as String? ?? DateTime.now().toIso8601String()),
+      leaseTermMonths: json['lease_term_months'] as int? ?? 12,
+      bedrooms: json['bedrooms'] as int? ?? 1,
+      bathrooms: json['bathrooms'] as int? ?? 1,
+      petsAllowed: json['pets_allowed'] as bool? ?? false,
+      partiesAllowed: json['parties_allowed'] as bool? ?? false,
+      smokingAllowed: json['smoking_allowed'] as bool? ?? false,
+      userId: json['user_id'] as int? ?? 0,
+      createdAt: DateTime.parse(json['created_at'] as String? ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updated_at'] as String? ?? DateTime.now().toIso8601String()),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'title': title,
       'listing_type': listingType,
       'description': description,
@@ -128,9 +106,6 @@ class Listing {
       'pets_allowed': petsAllowed,
       'parties_allowed': partiesAllowed,
       'smoking_allowed': smokingAllowed,
-      'user_id': userId,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
     };
   }
 }
