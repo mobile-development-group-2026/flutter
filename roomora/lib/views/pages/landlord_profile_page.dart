@@ -24,6 +24,15 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
       viewModel.loadCachedProfile();
+      final user = ClerkAuth.of(context, listen: false).user;
+      final emails = user?.emailAddresses;
+      if (emails != null && emails.isNotEmpty) {
+        final primaryEmailObj = emails.firstWhere(
+          (email) => email.id == user!.primaryEmailAddressId,
+          orElse: () => emails.first,
+        );
+        viewModel.emailController.text = primaryEmailObj.emailAddress;
+      }
     });
   }
 
@@ -448,37 +457,26 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
               ),
             ),
             const SizedBox(width: 4),
-            const Text(
-              '*',
-              style: TextStyle(color: Colors.red, fontSize: 13),
-            ),
+            const Icon(Icons.lock_outline, size: 12, color: Color(0xFFB0B6BF)),
           ],
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFF6F7F8), // 👈 Fondo gris claro
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFE4E7EC)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: TextField(
             controller: viewModel.emailController,
-            keyboardType: TextInputType.emailAddress,
+            readOnly: true,
+            style: const TextStyle(color: Color(0xFF6E7681)),
             decoration: const InputDecoration(
-              hintText: 'name@example.com',
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
           ),
         ),
-        _buildErrorText(viewModel.fieldErrors['email']),
       ],
     );
   }

@@ -7,6 +7,7 @@ import '/../../models/user_session.dart';
 import '/../../viewmodels/Auth/verify_email_viewmodel.dart';
 import '../../widgets/custom_button.dart';
 import '../Onboarding/onboarding_page.dart';
+import '../landlord_profile_page.dart';
 
 class VerifyEmailView extends StatefulWidget {
   final String email;
@@ -38,7 +39,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
 
   late Timer _timer;
   int _secondsLeft = 600;
-  bool _codeSent = false; // snackbar "Code resent"
+  bool _codeSent = false; 
 
   String get _timerLabel {
     final m = (_secondsLeft ~/ 60).toString().padLeft(1, '0');
@@ -100,15 +101,28 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
 
     if (!mounted) return;
 
-    if (ok) {
-      // Navegar al onboarding reemplazando toda la pila de auth
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const OnboardingView()),
-        (route) => route.isFirst,
-      );
+  //   if (ok) {
+  //     Navigator.of(context).pushAndRemoveUntil(
+  //       MaterialPageRoute(builder: (_) => const OnboardingView()),
+  //       (route) => route.isFirst,
+  //     );
+  //   }
+  // }
+
+  if (ok) {
+      if (widget.role.toLowerCase() == 'landlord') {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LandlordProfilePage()),
+          (route) => route.isFirst,
+        );
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const OnboardingView()),
+          (route) => route.isFirst,
+        );
+      }
     }
   }
-
   Future<void> _resendCode() async {
     if (_secondsLeft > 540) return;
 

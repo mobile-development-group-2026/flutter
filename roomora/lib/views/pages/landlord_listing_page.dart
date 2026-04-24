@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:roomora/views/pages/Onboarding/onboarding_complete_page.dart';
+import 'package:roomora/views/pages/discover_page.dart';
 import '../../viewmodels/listing_viewmodel.dart';
 import '../../services/api_service.dart';
 import '../../services/listing_storage_service.dart';
@@ -8,6 +10,7 @@ import '../widgets/photo_upload_widget.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
 import 'package:clerk_flutter/clerk_flutter.dart';
+import '../pages/Onboarding/onboarding_complete_page.dart';
 
 class LandlordListingPage extends StatefulWidget {
   final String landlordId;
@@ -22,101 +25,85 @@ class LandlordListingPage extends StatefulWidget {
 }
 
 class _LandlordListingPageState extends State<LandlordListingPage> {
-  late ListingViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _viewModel = Provider.of<ListingViewModel>(context, listen: false);
-      await _viewModel.loadCachedListings();
+      final viewModel = context.read<ListingViewModel>();
+      
+      await viewModel.loadCachedListings();
 
+      if (!mounted) return;
       final auth = ClerkAuth.of(context, listen: false);
       final tokenObj = await auth.sessionToken();
       final token = tokenObj?.jwt ?? '';
 
       if (token.isNotEmpty) {
-        await _viewModel.loadLandlordListings(token);
+        await viewModel.loadLandlordListings(token);
       }
-
-      _setupListeners();
+      _setupListeners(viewModel);
     });
   }
 
-  void _setupListeners() {
-    _viewModel.titleController.addListener(() {
-      _viewModel.validateField('title', _viewModel.titleController.text);
+  void _setupListeners(ListingViewModel viewModel) {
+    viewModel.titleController.addListener(() {
+      viewModel.validateField('title', viewModel.titleController.text);
     });
-    _viewModel.descriptionController.addListener(() {
-      _viewModel.validateField('description', _viewModel.descriptionController.text);
+    viewModel.descriptionController.addListener(() {
+      viewModel.validateField('description', viewModel.descriptionController.text);
     });
-    _viewModel.rentController.addListener(() {
-      _viewModel.validateField('rent', _viewModel.rentController.text);
+    viewModel.rentController.addListener(() {
+      viewModel.validateField('rent', viewModel.rentController.text);
     });
-    _viewModel.depositController.addListener(() {
-      _viewModel.validateField('deposit', _viewModel.depositController.text);
+    viewModel.depositController.addListener(() {
+      viewModel.validateField('deposit', viewModel.depositController.text);
     });
-    _viewModel.leaseLengthController.addListener(() {
-      _viewModel.validateField('leaseLength', _viewModel.leaseLengthController.text);
+    viewModel.leaseLengthController.addListener(() {
+      viewModel.validateField('leaseLength', viewModel.leaseLengthController.text);
     });
-  }
-
-  @override
-  void dispose() {
-    _viewModel.titleController.dispose();
-    _viewModel.descriptionController.dispose();
-    _viewModel.rentController.dispose();
-    _viewModel.depositController.dispose();
-    _viewModel.leaseLengthController.dispose();
-    super.dispose();
   }
 
   Future<void> _onPublishPressed() async {
-    if (!_viewModel.validateForm()) {
-      _viewModel.showValidationAlert(context);
+    final viewModel = context.read<ListingViewModel>(); 
+    
+    if (!viewModel.validateForm()) {
+      viewModel.showValidationAlert(context);
       return;
     }
-    final auth = ClerkAuth.of(context);
+    final auth = ClerkAuth.of(context, listen: false);
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt ?? '';
-    _viewModel.submitListing(token).then((_) {
+    
+    viewModel.submitListing(token).then((_) {
       if (mounted) {
-        if (_viewModel.currentListing != null) {
+        if (viewModel.currentListing != null) {
           _showSuccessDialog(context);
-        } else if (_viewModel.errorMessage != null) {
-          _showErrorDialog(context, _viewModel.errorMessage!);
+        } else if (viewModel.errorMessage != null) {
+          _showErrorDialog(context, viewModel.errorMessage!);
         }
       }
     });
   }
 
   void _onAddPhoto(String path) {
-    _viewModel.addPhoto(path);
+    context.read<ListingViewModel>().showImageSourceOptions(context);
   }
 
   void _onRemovePhoto(String path) {
-    _viewModel.removePhoto(path);
+    context.read<ListingViewModel>().removePhoto(path);
   }
 
   void _onSetCover(String path) {
-    _viewModel.setCoverPhoto(path);
+    context.read<ListingViewModel>().setCoverPhoto(path);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ListingViewModel(
-        apiService: ApiService(),
-        storageService: ListingStorageService(),
-      ),
-      child: Consumer<ListingViewModel>(
-        builder: (context, viewModel, child) {
-          if (_viewModel != viewModel) {
-            _viewModel = viewModel;
-          }
-          return _buildContent(context, viewModel);
-        },
-      ),
+    return Consumer<ListingViewModel>(
+      builder: (context, viewModel, child) {
+        return _buildContent(context, viewModel);
+      },
     );
   }
 
@@ -960,6 +947,7 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Success!'),
@@ -968,8 +956,26 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
+              
               if (mounted) {
-                Navigator.pop(context, true);
+                final user = ClerkAuth.of(context, listen: false).user;
+                final landlordName = user?.firstName ?? 'Landlord';
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => OnboardingCompleteView(
+                      firstName: landlordName,
+                      role: 'landlord', 
+                      onContinue: () {
+                        Navigator.pushReplacement(
+                          context, 
+                          MaterialPageRoute(builder: (_) => const DiscoverPage())
+                        );
+                      },
+                    ), 
+                  ),
+                  (route) => false, 
+                );
               }
             },
             style: TextButton.styleFrom(
