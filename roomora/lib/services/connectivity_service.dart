@@ -6,8 +6,11 @@ class ConnectivityService {
   factory ConnectivityService() => _instance;
   ConnectivityService._internal() {
     _setupListeners();
+    _initConnectivity();
   }
-
+  Future<void> _initConnectivity() async {
+    _isConnected = await checkConnection();
+  }
   final Connectivity _connectivity = Connectivity();
   final _controller = StreamController<bool>.broadcast();
   Stream<bool> get onConnectivityChanged => _controller.stream;

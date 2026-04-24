@@ -27,9 +27,18 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _viewModel = Provider.of<ListingViewModel>(context, listen: false);
-      _viewModel.loadCachedListings();
+      await _viewModel.loadCachedListings();
+
+      final auth = ClerkAuth.of(context, listen: false);
+      final tokenObj = await auth.sessionToken();
+      final token = tokenObj?.jwt ?? '';
+
+      if (token.isNotEmpty) {
+        await _viewModel.loadLandlordListings(token);
+      }
+
       _setupListeners();
     });
   }
