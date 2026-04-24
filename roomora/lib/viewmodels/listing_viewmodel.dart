@@ -808,37 +808,26 @@ class ListingViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    _isOnline = await _connectivity.checkConnection();
+
     try {
+      if (!_isOnline) {
+        final cached = await _storageService.getCachedListings();
+        _landlordListings = cached;
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
       final listings = await _apiService.getListings(token: token);
       _landlordListings = listings.map((apiListing) => apiListing.toListing()).toList();
       await _storageService.saveListings(_landlordListings);
       _errorMessage = null;
     } catch (e) {
+      print('Error: $e');
       final cached = await _storageService.getCachedListings();
       if (cached.isNotEmpty) {
         _landlordListings = cached;
-      } else {
-        _errorMessage = e.toString();
-      }
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> loadListing(String id, String token) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final apiListing = await _apiService.getListing(id, token: token);
-      _currentListing = apiListing.toListing();
-      await _storageService.saveSingleListing(_currentListing!);
-      _errorMessage = null;
-    } catch (e) {
-      final cached = await _storageService.getSingleListing(id);
-      if (cached != null) {
-        _currentListing = cached;
       } else {
         _errorMessage = e.toString();
       }

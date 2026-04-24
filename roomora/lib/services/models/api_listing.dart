@@ -56,32 +56,36 @@ class ApiListing {
   });
 
   factory ApiListing.fromJson(Map<String, dynamic> json) {
+    int parseInt(dynamic v) => v == null ? 0 : (v is int ? v : int.tryParse(v.toString()) ?? 0);
+    double parseDouble(dynamic v) => v == null ? 0.0 : (v is num ? v.toDouble() : double.tryParse(v.toString()) ?? 0.0);
+    bool parseBool(dynamic v) => v == null ? false : (v is bool ? v : v.toString() == 'true' || v.toString() == '1');
+
     return ApiListing(
-      id: json['id'] as int? ?? 0,
-      title: json['title'] as String? ?? '',
-      listingType: json['listing_type'] as String? ?? 'property',
-      description: json['description'] as String? ?? '',
-      propertyType: json['property_type'] as String? ?? 'apartment',
-      address: json['address'] as String? ?? '',
-      city: json['city'] as String? ?? '',
-      state: json['state'] as String? ?? '',
-      zipCode: json['zip_code'] as String? ?? '',
-      latitude: (json['latitude'] as num? ?? 0).toDouble(),
-      longitude: (json['longitude'] as num? ?? 0).toDouble(),
-      rent: (json['rent'] as num? ?? 0).toDouble(),
-      securityDeposit: (json['security_deposit'] as num? ?? 0).toDouble(),
-      utilitiesIncluded: json['utilities_included'] as bool? ?? false,
-      utilitiesCost: (json['utilities_cost'] as num?)?.toDouble(),
-      availableDate: json['available_date'] as String? ?? '',
-      leaseTermMonths: json['lease_term_months'] as int? ?? 12,
-      bedrooms: json['bedrooms'] as int? ?? 1,
-      bathrooms: json['bathrooms'] as int? ?? 1,
-      petsAllowed: json['pets_allowed'] as bool? ?? false,
-      partiesAllowed: json['parties_allowed'] as bool? ?? false,
-      smokingAllowed: json['smoking_allowed'] as bool? ?? false,
-      userId: json['user_id'] as int? ?? 0,
-      createdAt: json['created_at'] as String? ?? '',
-      updatedAt: json['updated_at'] as String? ?? '',
+      id: parseInt(json['id']),
+      title: json['title']?.toString() ?? '',
+      listingType: json['listing_type']?.toString() ?? 'property',
+      description: json['description']?.toString() ?? '',
+      propertyType: json['property_type']?.toString() ?? 'apartment',
+      address: json['address']?.toString() ?? '',
+      city: json['city']?.toString() ?? '',
+      state: json['state']?.toString() ?? '',
+      zipCode: json['zip_code']?.toString() ?? '',
+      latitude: parseDouble(json['latitude']),
+      longitude: parseDouble(json['longitude']),
+      rent: parseDouble(json['rent']),
+      securityDeposit: parseDouble(json['security_deposit']),
+      utilitiesIncluded: parseBool(json['utilities_included']),
+      utilitiesCost: json['utilities_cost'] != null ? parseDouble(json['utilities_cost']) : null,
+      availableDate: json['available_date']?.toString() ?? '',
+      leaseTermMonths: parseInt(json['lease_term_months']),
+      bedrooms: parseInt(json['bedrooms']),
+      bathrooms: parseInt(json['bathrooms']),
+      petsAllowed: parseBool(json['pets_allowed']),
+      partiesAllowed: parseBool(json['parties_allowed']),
+      smokingAllowed: parseBool(json['smoking_allowed']),
+      userId: parseInt(json['user_id']),
+      createdAt: json['created_at']?.toString() ?? '',
+      updatedAt: json['updated_at']?.toString() ?? '',
     );
   }
 

@@ -31,6 +31,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt;
 
+    print('Token: $token');
+
     if (token != null && mounted) {
       context.read<ListingViewModel>().loadLandlordListings(token);
     }

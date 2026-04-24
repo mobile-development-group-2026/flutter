@@ -30,6 +30,7 @@ class ProfileViewModel extends ChangeNotifier {
   LandlordProfile? _currentProfile;
   String? _profilePhoto;
   XFile? _selectedImage;
+  String? _currentToken;
 
   bool _isOnline = true;
   bool get isOnline => _isOnline;
@@ -97,28 +98,26 @@ class ProfileViewModel extends ChangeNotifier {
     _connectivity.onConnectivityChanged.listen((isOnline) {
       _isOnline = isOnline;
       notifyListeners();
-      if (isOnline) {
-        _syncPendingTasks();
+      if (isOnline && _currentToken != null) {
+        _syncPendingTasks(token: _currentToken!);
       }
     });
   }
 
   Future<void> _syncPendingTasksOnStart() async {
     final isOnline = await _connectivity.checkConnection();
-    if (isOnline) {
-      await _syncPendingTasks();
+    if (isOnline && _currentToken != null) {
+      await _syncPendingTasks(token: _currentToken!);
     }
   }
 
-  Future<void> _syncPendingTasks() async {
+  Future<void> _syncPendingTasks({required String token}) async {
     final tasks = await _offlineQueue.getPendingTasks();
     if (tasks.isEmpty) return;
-
     for (final task in tasks) {
       try {
         if (task['type'] == 'update_profile') {
           final data = task['data'] as Map<String, dynamic>;
-          
           final profileData = {
             'firstName': data['firstName'],
             'lastName': data['lastName'],
@@ -127,8 +126,7 @@ class ProfileViewModel extends ChangeNotifier {
             'profilePhoto': data['profilePhoto'],
             'bio': data['bio'],
           };
-          
-          final result = await _apiService.updateProfile(profileData);
+          final result = await _apiService.updateProfile(profileData, token: token);
           await _storageService.saveProfile(result);
           await _offlineQueue.removeTask(task['id']);
         }
@@ -461,6 +459,7 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<LandlordProfile?> submitProfile(String token) async {
+    _currentToken = token;
     if (!validateForm()) {
       return null;
     }
@@ -528,6 +527,7 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<bool> updateProfile(String token) async {
+    _currentToken = token;
     if (_currentProfile == null) return false;
     
     _isLoading = true;
