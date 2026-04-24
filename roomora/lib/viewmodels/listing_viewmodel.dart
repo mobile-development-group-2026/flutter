@@ -286,7 +286,7 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<Listing?> submitListing() async {
+  Future<Listing?> submitListing(String token) async {
     if (!validateForm()) {
       _errorMessage = 'Please fill in all required fields';
       notifyListeners();
@@ -326,7 +326,7 @@ class ListingViewModel extends ChangeNotifier {
         updatedAt: '',
       );
 
-      final result = await _apiService.createListing(apiListing);
+      final result = await _apiService.createListing(apiListing, token: token);
       
       _currentListing = Listing(
         id: result.id,
@@ -361,7 +361,11 @@ class ListingViewModel extends ChangeNotifier {
         final file = File(cleanPath);
         if (await file.exists()) {
           try {
-            await _apiService.uploadListingPhoto(result.id, cleanPath);
+            await _apiService.uploadListingPhoto(
+              listingId: result.id,
+              imagePath: cleanPath,
+              token: token,
+            );
           } catch (e) {
             print('Error uploading photo $cleanPath: $e');
           }
@@ -379,12 +383,12 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> loadLandlordListings() async {
+  Future<void> loadLandlordListings(String token) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final listings = await _apiService.getListings();
+      final listings = await _apiService.getListings(token: token);
       _landlordListings = listings.map((apiListing) => Listing(
         id: apiListing.id,
         title: apiListing.title,
@@ -421,12 +425,12 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> loadListing(String id) async {
+  Future<void> loadListing(String id, String token) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final apiListing = await _apiService.getListing(id);
+      final apiListing = await _apiService.getListing(id, token: token);
       _currentListing = Listing(
         id: apiListing.id,
         title: apiListing.title,
@@ -463,7 +467,7 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateListing(Listing listing) async {
+  Future<bool> updateListing(Listing listing, String token) async {
     _isLoading = true;
     notifyListeners();
 
@@ -496,7 +500,7 @@ class ListingViewModel extends ChangeNotifier {
         updatedAt: DateTime.now().toIso8601String(),
       );
 
-      final updated = await _apiService.updateListing(apiListing);
+      final updated = await _apiService.updateListing(apiListing, token: token);
       
       _currentListing = Listing(
         id: updated.id,
@@ -543,12 +547,12 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteListing(String id) async {
+  Future<bool> deleteListing(String id, String token) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      await _apiService.deleteListing(id);
+      await _apiService.deleteListing(id, token: token);
       _landlordListings.removeWhere((l) => l.id == id);
       if (_currentListing?.id == id) {
         _currentListing = null;

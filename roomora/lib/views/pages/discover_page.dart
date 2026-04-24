@@ -5,6 +5,8 @@ import '/../theme/colors.dart';
 import '/../viewmodels/listing_viewmodel.dart';
 import '/../models/listing.dart';
 import 'map_page.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
+import '/../../models/user_session.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
@@ -20,8 +22,18 @@ class _DiscoverPageState extends State<DiscoverPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ListingViewModel>().loadLandlordListings();
+      _cargarListings();
     });
+  }
+
+  Future<void> _cargarListings() async {
+    final auth = ClerkAuth.of(context, listen: false);
+    final tokenObj = await auth.sessionToken();
+    final token = tokenObj?.jwt;
+
+    if (token != null && mounted) {
+      context.read<ListingViewModel>().loadLandlordListings(token);
+    }
   }
 
   @override
@@ -61,7 +73,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                           ),
                           const SizedBox(height: 16),
                           TextButton(
-                            onPressed: () => vm.loadLandlordListings(),
+                            onPressed: () => _cargarListings(),
                             child: Text(
                               'Reintentar',
                               style: TextStyle(
@@ -702,7 +714,20 @@ class _DiscoverPageState extends State<DiscoverPage> {
           _navItem(icon: LucideIcons.clipboardList, label: 'Activity'),
           _navItem(
               icon: LucideIcons.messageCircle, label: 'Messages', badge: 3),
-          _navItem(icon: LucideIcons.user, label: 'Profile'),
+          _navItem(
+            icon: LucideIcons.user,
+            label: 'Profile',
+            onTap: () async {
+              // 1. Cerramos sesión en Clerk
+              await ClerkAuth.of(context, listen: false).signOut();
+              
+              // 2. Usamos el 'mounted' del Estado en lugar de context.mounted
+              if (!mounted) return;
+              
+              // 3. Limpiamos tu estado local
+              context.read<UserSession>().clear();
+            },
+          ),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import '../../viewmodels/profile_viewmodel.dart';
 import '../../services/api_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
 import 'landlord_listing_page.dart';
 
 class LandlordProfilePage extends StatelessWidget {
@@ -432,30 +433,47 @@ class LandlordProfilePage extends StatelessWidget {
   }
 
   Widget _buildContinueButton(BuildContext context, ProfileViewModel viewModel) {
-  return CustomButton(
-    text: 'Continue',
-    onPressed: () async {
-      print('Boton Continue presionado');
-      final profile = await viewModel.submitProfile();
-      if (profile != null) {
-        print('Perfil creado, navegando...');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => LandlordListingPage(landlordId: profile.id.toString()),
-          ),
-        );
-      } else if (viewModel.errorMessage != null) {
-        print('Error: ${viewModel.errorMessage}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(viewModel.errorMessage!),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    },
-    isPrimary: true,
-  );
-}
+    return CustomButton(
+      text: 'Continue',
+      onPressed: () async {
+        print('Boton Continue presionado');
+        final auth = ClerkAuth.of(context, listen: false);
+        final tokenObj = await auth.sessionToken();
+        final token = tokenObj?.jwt;
+
+        if (token != null) {
+          final profile = await viewModel.submitProfile(token);
+          if (!context.mounted) return;
+
+          if (profile != null) {
+            print('Perfil creado, navegando...');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LandlordListingPage(landlordId: profile.id.toString()),
+              ),
+            );
+          } else if (viewModel.errorMessage != null) {
+            print('Error: ${viewModel.errorMessage}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(viewModel.errorMessage!),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error de sesión. Por favor, volvé a ingresar.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      },
+      isPrimary: true,
+    );
+  }
 }

@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../widgets/photo_upload_widget.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
 
 class LandlordListingPage extends StatelessWidget {
   final String landlordId;
@@ -626,17 +627,29 @@ class LandlordListingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, ListingViewModel viewModel) {
+ Widget _buildActionButtons(BuildContext context, ListingViewModel viewModel) {
     return Column(
       children: [
         CustomButton(
           text: 'Publish Listing',
           onPressed: () async {
-            final listing = await viewModel.submitListing();
-            if (listing != null) {
-              _showSuccessDialog(context);
-            } else if (viewModel.errorMessage != null) {
-              _showErrorDialog(context, viewModel.errorMessage!);
+            final auth = ClerkAuth.of(context, listen: false);
+            final tokenObj = await auth.sessionToken();
+            final token = tokenObj?.jwt;
+
+            if (token != null) {
+              final listing = await viewModel.submitListing(token);
+              if (!context.mounted) return;
+
+              if (listing != null) {
+                _showSuccessDialog(context);
+              } else if (viewModel.errorMessage != null) {
+                _showErrorDialog(context, viewModel.errorMessage!);
+              }
+            } else {
+              if (context.mounted) {
+                _showErrorDialog(context, "Error de autenticación. Por favor, iniciá sesión nuevamente.");
+              }
             }
           },
           isPrimary: true,

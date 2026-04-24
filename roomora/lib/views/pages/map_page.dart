@@ -7,6 +7,7 @@ import '/../theme/colors.dart';
 import '/../viewmodels/map_viewmodel.dart';
 import '/../services/models/api_listing.dart';
 import '/../utils/location_calculator.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -18,14 +19,25 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final MapController _mapController = MapController();
 
-  @override
+ @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MapViewModel>().initialize();
+      _inicializarMapa();
     });
   }
 
+  Future<void> _inicializarMapa() async {
+    final auth = ClerkAuth.of(context, listen: false);
+    final tokenObj = await auth.sessionToken();
+    final token = tokenObj?.jwt;
+
+    if (token != null && mounted) {
+      context.read<MapViewModel>().initialize(token); 
+    } else {
+      print('No se pudo obtener el token para el mapa');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

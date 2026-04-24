@@ -137,7 +137,7 @@ class ProfileViewModel extends ChangeNotifier {
         _profilePhoto != null;
   }
 
-  Future<LandlordProfile?> submitProfile() async {
+  Future<LandlordProfile?> submitProfile(String token) async {
     if (!validateForm()) {
       _errorMessage = 'Please fill in all required fields and add a photo';
       notifyListeners();
@@ -162,7 +162,10 @@ class ProfileViewModel extends ChangeNotifier {
         'bio': bioController.text,
       };
 
-      final result = await _apiService.updateProfile(profileData);
+      final result = await _apiService.updateProfile(
+        profileData, 
+        token: token,
+      );
       
       _currentProfile = result;
       
@@ -177,9 +180,9 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateProfile() async {
+  Future<bool> updateProfile(String token) async {
     if (_currentProfile == null) return false;
-
+    
     _isLoading = true;
     notifyListeners();
 
@@ -197,7 +200,10 @@ class ProfileViewModel extends ChangeNotifier {
         'bio': bioController.text,
       };
 
-      final result = await _apiService.updateProfile(profileData);
+      final result = await _apiService.updateProfile(
+        profileData,
+        token: token,
+      );
       
       _currentProfile = result;
       
