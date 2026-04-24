@@ -7,6 +7,7 @@ import '../services/listing_storage_service.dart';
 import '../services/models/api_listing.dart';
 import '../services/offline_queue_service.dart';
 import '../services/connectivity_service.dart';
+import 'dart:io';
 
 class ListingViewModel extends ChangeNotifier {
   final ApiService _apiService;
@@ -40,6 +41,7 @@ class ListingViewModel extends ChangeNotifier {
   XFile? _selectedImage;
 
   bool _isOnline = true;
+  String? _currentToken;
   bool get isOnline => _isOnline;
 
   bool get isLoading => _isLoading;
@@ -163,20 +165,20 @@ class ListingViewModel extends ChangeNotifier {
     _connectivity.onConnectivityChanged.listen((isOnline) {
       _isOnline = isOnline;
       notifyListeners();
-      if (isOnline) {
-        _syncPendingTasks();
+      if (isOnline && _currentToken != null) {
+        _syncPendingTasks(token: _currentToken!);
       }
     });
   }
 
   Future<void> _syncPendingTasksOnStart() async {
     final isOnline = await _connectivity.checkConnection();
-    if (isOnline) {
-      await _syncPendingTasks();
+    if (isOnline && _currentToken != null) {
+      await _syncPendingTasks(token: _currentToken!);
     }
   }
 
-  Future<void> _syncPendingTasks() async {
+  Future<void> _syncPendingTasks({required String token}) async {
     final tasks = await _offlineQueue.getPendingTasks();
     if (tasks.isEmpty) return;
 
@@ -216,11 +218,15 @@ class ListingViewModel extends ChangeNotifier {
           );
           
           final apiListing = ApiListing.fromListing(listing);
-          final result = await _apiService.createListing(apiListing);
+          final result = await _apiService.createListing(apiListing, token: token);
           
           for (String photoPath in data['photos']) {
             if (photoPath.startsWith('/') || photoPath.startsWith('C:')) {
-              await _apiService.uploadListingPhoto(result.id.toString(), photoPath);
+              await _apiService.uploadListingPhoto(
+                listingId: result.id.toString(),
+                imagePath: photoPath,
+                token: token,
+              );
             }
           }
           
@@ -232,7 +238,7 @@ class ListingViewModel extends ChangeNotifier {
       }
     }
     
-    await loadLandlordListings();
+    await loadLandlordListings(token);
     _progressSubject.add('');
   }
 
@@ -655,13 +661,156 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> loadLandlordListings() async {
+  String _cleanImagePath(String path) {
+    if (path.startsWith('file://')) {
+      return path.replaceFirst('file://', '');
+    }
+    return path;
+  }
+
+  String _getPropertyTypeValue() {
+    switch (_selectedPropertyType) {
+      case 'Shared room':
+        return 'shared_room';
+      case 'Studio':
+        return 'studio';
+      case '1 bedroom':
+        return 'one_bedroom';
+      case '2 bedrooms':
+        return 'two_bedrooms';
+      case '3+ bedrooms':
+        return 'three_plus_bedrooms';
+      default:
+        return 'studio';
+    }
+  }
+
+  Future<Listing?> submitListing(String token) async {
+    if (!validateForm()) {
+      _errorMessage = 'Please fill in all required fields';
+      notifyListeners();
+      return null;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    _progressSubject.add('Validating listing data...');
+    notifyListeners();
+
+    try {
+      final apiListing = ApiListing(
+        id: 0,
+        title: titleController.text.trim(),
+        listingType: 'property',
+        description: descriptionController.text.trim(),
+        propertyType: _getPropertyTypeValue(),
+        address: '123 University Ave',
+        city: 'Cambridge',
+        state: 'MA',
+        zipCode: '02139',
+        latitude: 42.3736,
+        longitude: -71.1097,
+        rent: double.parse(rentController.text),
+        securityDeposit: double.parse(depositController.text),
+        utilitiesIncluded: _selectedAmenities.isNotEmpty,
+        utilitiesCost: null,
+        availableDate: _moveInDate!.toIso8601String().split('T').first,
+        leaseTermMonths: int.parse(leaseLengthController.text.split(' ')[0]),
+        bedrooms: _getBedroomsFromType(_selectedPropertyType),
+        bathrooms: 1,
+        petsAllowed: _getPetsAllowed(),
+        partiesAllowed: _getPartiesAllowed(),
+        smokingAllowed: _getSmokingAllowed(),
+        userId: 1,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+      );
+
+      _progressSubject.add('Sending to server...');
+      final result = await _apiService.createListing(apiListing, token: token);
+      
+      _progressSubject.add('Uploading photos...');
+      for (String photoPath in _photos) {
+        final cleanPath = _cleanImagePath(photoPath);
+        final file = File(cleanPath);
+        if (await file.exists()) {
+          try {
+            await _apiService.uploadListingPhoto(
+              listingId: result.id.toString(),
+              imagePath: cleanPath,
+              token: token,
+            );
+          } catch (e) {
+            print('Error uploading photo $cleanPath: $e');
+          }
+        }
+      }
+      
+      _progressSubject.add('Saving to local cache...');
+      _currentListing = result.toListing();
+      await _storageService.saveSingleListing(_currentListing!);
+      
+      final updatedListings = List<Listing>.from(_landlordListings)..add(_currentListing!);
+      await _storageService.saveListings(updatedListings);
+      
+      _landlordListings = updatedListings;
+      _isLoading = false;
+      _progressSubject.add('Listing published!');
+      
+      clearForm();
+      await _offlineQueue.clearListingDraft();
+      
+      await Future.delayed(const Duration(milliseconds: 500));
+      _progressSubject.add('');
+      
+      notifyListeners();
+      return _currentListing;
+    } catch (e) {
+      final errorStr = e.toString();
+      
+      // Fallback para conexión offline
+      if (errorStr.contains('SocketException') || 
+          errorStr.contains('Connection refused') ||
+          errorStr.contains('Failed to connect')) {
+        
+        final taskData = {
+          'title': titleController.text.trim(),
+          'description': descriptionController.text.trim(),
+          'rent': double.parse(rentController.text),
+          'deposit': double.parse(depositController.text),
+          'leaseTermMonths': int.parse(leaseLengthController.text.split(' ')[0]),
+          'moveInDate': _moveInDate!.toIso8601String(),
+          'propertyType': _getPropertyTypeValue(),
+          'bedrooms': _getBedroomsFromType(_selectedPropertyType),
+          'petsAllowed': _getPetsAllowed(),
+          'partiesAllowed': _getPartiesAllowed(),
+          'smokingAllowed': _getSmokingAllowed(),
+          'photos': _photos,
+          'landlordId': '', // O el ID real si lo tenés
+        };
+        
+        await _offlineQueue.addTask('create_listing', taskData);
+        _errorMessage = 'No internet connection. Listing saved offline and will sync later.';
+        _progressSubject.add('Saved offline');
+      } else {
+        _errorMessage = errorStr;
+        _progressSubject.add('Error: $errorStr');
+      }
+      
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<void> loadLandlordListings(String token) async {
+    _currentToken = token;
     _isLoading = true;
     notifyListeners();
 
     try {
-      final listings = await _apiService.getListings();
-      _landlordListings = listings.map((api) => api.toListing()).toList();
+      final listings = await _apiService.getListings(token: token);
+      _landlordListings = listings.map((apiListing) => apiListing.toListing()).toList();
       await _storageService.saveListings(_landlordListings);
       _errorMessage = null;
     } catch (e) {
@@ -677,12 +826,12 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> loadListing(String id) async {
+  Future<void> loadListing(String id, String token) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final apiListing = await _apiService.getListing(id);
+      final apiListing = await _apiService.getListing(id, token: token);
       _currentListing = apiListing.toListing();
       await _storageService.saveSingleListing(_currentListing!);
       _errorMessage = null;
@@ -699,13 +848,14 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateListing(Listing listing) async {
+  Future<bool> updateListing(Listing listing, String token) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       final apiListing = ApiListing.fromListing(listing);
-      final updated = await _apiService.updateListing(apiListing);
+      final updated = await _apiService.updateListing(apiListing, token: token);
+      
       _currentListing = updated.toListing();
       await _storageService.saveSingleListing(_currentListing!);
       
@@ -727,13 +877,12 @@ class ListingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteListing(int id) async {
+  Future<bool> deleteListing(String id, String token) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      await _apiService.deleteListing(id.toString());
-      await _storageService.deleteListing(id);
+      await _apiService.deleteListing(id, token: token);
       _landlordListings.removeWhere((l) => l.id == id);
       if (_currentListing?.id == id) {
         _currentListing = null;
@@ -747,114 +896,6 @@ class ListingViewModel extends ChangeNotifier {
       _errorMessage = e.toString();
       notifyListeners();
       return false;
-    }
-  }
-
-  Future<Listing?> submitListing() async {
-    if (!validateForm()) {
-      return null;
-    }
-
-    _isLoading = true;
-    _errorMessage = null;
-    _progressSubject.add('Validating listing data...');
-    notifyListeners();
-
-    try {
-      final newListing = Listing(
-        id: 0,
-        title: titleController.text.trim(),
-        listingType: 'property',
-        description: descriptionController.text.trim(),
-        propertyType: _selectedPropertyType.toLowerCase().replaceAll(' ', '_'),
-        address: '123 University Ave',
-        city: 'Cambridge',
-        state: 'MA',
-        zipCode: '02139',
-        latitude: 42.3736,
-        longitude: -71.1097,
-        rent: double.parse(rentController.text),
-        securityDeposit: double.parse(depositController.text),
-        utilitiesIncluded: false,
-        utilitiesCost: null,
-        availableDate: _moveInDate!,
-        leaseTermMonths: int.parse(leaseLengthController.text.split(' ')[0]),
-        bedrooms: _getBedroomsFromType(_selectedPropertyType),
-        bathrooms: 1,
-        petsAllowed: _getPetsAllowed(),
-        partiesAllowed: _getPartiesAllowed(),
-        smokingAllowed: _getSmokingAllowed(),
-        userId: 1,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-
-      final apiListing = ApiListing.fromListing(newListing);
-
-      _progressSubject.add('Sending to server...');
-      final result = await _apiService.createListing(apiListing);
-      
-      _progressSubject.add('Uploading photos...');
-      for (String photoPath in _photos) {
-        if (photoPath.startsWith('/') || photoPath.startsWith('C:')) {
-          await _apiService.uploadListingPhoto(result.id.toString(), photoPath);
-        }
-      }
-      
-      _progressSubject.add('Saving to local cache...');
-      await _storageService.saveSingleListing(result.toListing());
-      await _offlineQueue.clearListingDraft();
-      
-      final updatedListings = List<Listing>.from(_landlordListings)..add(result.toListing());
-      await _storageService.saveListings(updatedListings);
-      
-      _currentListing = result.toListing();
-      _landlordListings = updatedListings;
-      _isLoading = false;
-      _progressSubject.add('Listing published!');
-      
-      clearForm();
-      await _offlineQueue.clearListingDraft();
-      
-      await Future.delayed(const Duration(milliseconds: 500));
-      _progressSubject.add('');
-      
-      notifyListeners();
-      return _currentListing;
-    } catch (e) {
-      final errorStr = e.toString();
-      
-      if (errorStr.contains('SocketException') || 
-          errorStr.contains('Connection refused') ||
-          errorStr.contains('Failed to connect')) {
-        
-        final taskData = {
-          'title': titleController.text.trim(),
-          'description': descriptionController.text.trim(),
-          'rent': double.parse(rentController.text),
-          'deposit': double.parse(depositController.text),
-          'leaseTermMonths': int.parse(leaseLengthController.text.split(' ')[0]),
-          'moveInDate': _moveInDate!.toIso8601String(),
-          'propertyType': _selectedPropertyType.toLowerCase().replaceAll(' ', '_'),
-          'bedrooms': _getBedroomsFromType(_selectedPropertyType),
-          'petsAllowed': _getPetsAllowed(),
-          'partiesAllowed': _getPartiesAllowed(),
-          'smokingAllowed': _getSmokingAllowed(),
-          'photos': _photos,
-          'landlordId': 1,
-        };
-        
-        await _offlineQueue.addTask('create_listing', taskData);
-        _errorMessage = 'No internet connection. Listing saved and will be published when connection is restored.';
-        _progressSubject.add('Saved offline - will sync when online');
-      } else {
-        _errorMessage = errorStr;
-        _progressSubject.add('Error: $errorStr');
-      }
-      
-      _isLoading = false;
-      notifyListeners();
-      return null;
     }
   }
 

@@ -30,6 +30,8 @@ dependencies:
   rxdart: ^0.28.0
   path_provider: ^2.1.5
   connectivity_plus: ^6.1.3
+  clerk_flutter: ^0.0.8-beta
+  clerk_auth: ^0.0.8-beta
 
 dev_dependencies:
   flutter_test:

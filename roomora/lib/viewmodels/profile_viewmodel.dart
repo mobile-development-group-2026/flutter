@@ -460,7 +460,7 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<LandlordProfile?> submitProfile() async {
+  Future<LandlordProfile?> submitProfile(String token) async {
     if (!validateForm()) {
       return null;
     }
@@ -483,7 +483,10 @@ class ProfileViewModel extends ChangeNotifier {
         'bio': bioController.text,
       };
 
-      final result = await _apiService.updateProfile(profileData);
+      final result = await _apiService.updateProfile(
+        profileData, 
+        token: token,
+      );
       
       await _storageService.saveProfile(result);
       await _offlineQueue.clearProfileDraft();
@@ -524,9 +527,9 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateProfile() async {
+  Future<bool> updateProfile(String token) async {
     if (_currentProfile == null) return false;
-
+    
     _isLoading = true;
     notifyListeners();
 
@@ -544,7 +547,10 @@ class ProfileViewModel extends ChangeNotifier {
         'bio': bioController.text,
       };
 
-      final result = await _apiService.updateProfile(profileData);
+      final result = await _apiService.updateProfile(
+        profileData,
+        token: token,
+      );
       
       await _storageService.saveProfile(result);
       _currentProfile = result;

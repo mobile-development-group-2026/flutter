@@ -40,13 +40,13 @@ class MapViewModel extends ChangeNotifier {
     return defaultCampus;
   }
 
-  Future<void> initialize() async {
+  Future<void> initialize(String token) async {
     _isLoading = true;
     notifyListeners();
 
     await _requestPermissions();
     await _getCurrentLocation();
-    await loadListings();
+    await loadListings(token);
 
     _isLoading = false;
     notifyListeners();
@@ -65,9 +65,9 @@ class MapViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> loadListings() async {
+  Future<void> loadListings(String token) async {
     try {
-      final listings = await _apiService.getListings();
+      final listings = await _apiService.getListings(token: token); 
       _allListings = listings;
       _applyDistanceFilter();
     } catch (e) {

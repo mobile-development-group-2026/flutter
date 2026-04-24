@@ -7,6 +7,7 @@ import '../../services/listing_storage_service.dart';
 import '../widgets/photo_upload_widget.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
 
 class LandlordListingPage extends StatefulWidget {
   final String landlordId;
@@ -61,12 +62,15 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
     super.dispose();
   }
 
-  void _onPublishPressed() {
+  Future<void> _onPublishPressed() async {
     if (!_viewModel.validateForm()) {
       _viewModel.showValidationAlert(context);
       return;
     }
-    _viewModel.submitListing().then((_) {
+    final auth = ClerkAuth.of(context);
+    final tokenObj = await auth.sessionToken();
+    final token = tokenObj?.jwt ?? '';
+    _viewModel.submitListing(token).then((_) {
       if (mounted) {
         if (_viewModel.currentListing != null) {
           _showSuccessDialog(context);
@@ -896,7 +900,50 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
             ),
           ),
         ),
-        _buildErrorText(viewModel.fieldErrors['description']),
+      ],
+    );
+  }
+
+ Widget _buildActionButtons(BuildContext context, ListingViewModel viewModel) {
+    return Column(
+      children: [
+        CustomButton(
+          text: 'Publish Listing',
+          onPressed: () async {
+            final auth = ClerkAuth.of(context, listen: false);
+            final tokenObj = await auth.sessionToken();
+            final token = tokenObj?.jwt;
+
+            if (token != null) {
+              final listing = await viewModel.submitListing(token);
+              if (!context.mounted) return;
+
+              if (listing != null) {
+                _showSuccessDialog(context);
+              } else if (viewModel.errorMessage != null) {
+                _showErrorDialog(context, viewModel.errorMessage!);
+              }
+            } else {
+              if (context.mounted) {
+                _showErrorDialog(context, "Error de autenticación. Por favor, iniciá sesión nuevamente.");
+              }
+            }
+          },
+          isPrimary: true,
+        ),
+        const SizedBox(height: 12),
+        CustomButton(
+          text: 'Save as Draft',
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Draft saved'),
+                backgroundColor: Color(0xFF7B5BF2),
+              ),
+            );
+          },
+          isPrimary: false,
+        ),
       ],
     );
   }

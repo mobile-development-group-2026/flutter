@@ -7,6 +7,7 @@ import '../../services/local_storage_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
 import '../widgets/cached_profile_image.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
 import 'landlord_listing_page.dart';
 
 class LandlordProfilePage extends StatefulWidget {
@@ -559,23 +560,35 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
   Widget _buildContinueButton(ProfileViewModel viewModel) {
     return CustomButton(
       text: 'Continue',
-      onPressed: () {
+      isPrimary: true,
+      onPressed: () async {
         if (!viewModel.validateForm()) {
           viewModel.showValidationAlert(context);
           return;
         }
-        
-        viewModel.submitProfile().then((profile) {
-          if (mounted) {
-            if (profile != null) {
-              _navigateToListingPage(profile.id.toString());
-            } else if (viewModel.errorMessage != null) {
-              _showErrorSnackBar(viewModel.errorMessage!);
-            }
+
+        print('Boton Continue presionado');
+        final auth = ClerkAuth.of(context, listen: false);
+        final tokenObj = await auth.sessionToken();
+        final token = tokenObj?.jwt;
+
+        if (token != null) {
+          final profile = await viewModel.submitProfile(token);
+          if (!context.mounted) return;
+
+          if (profile != null) {
+            print('Perfil creado, navegando...');
+            _navigateToListingPage(profile.id.toString());
+          } else if (viewModel.errorMessage != null) {
+            print('Error: ${viewModel.errorMessage}');
+            _showErrorSnackBar(viewModel.errorMessage!);
           }
-        });
+        } else {
+          if (context.mounted) {
+            _showErrorSnackBar('Error de sesión. Por favor, volvé a ingresar.');
+          }
+        }
       },
-      isPrimary: true,
     );
   }
 }
