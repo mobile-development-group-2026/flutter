@@ -50,4 +50,11 @@ class LocalStorageService {
     }
     return null;
   }
+
+  Future<void> clearProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('landlord_profile');
+    _cache.clear();
+    _cacheOrder.clear();
+  }
 }

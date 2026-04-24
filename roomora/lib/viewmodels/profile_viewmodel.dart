@@ -3,22 +3,36 @@ import 'package:image_picker/image_picker.dart';
 import '../models/landlord_profile.dart';
 import '../services/api_service.dart';
 import '../services/local_storage_service.dart';
+import '../services/offline_queue_service.dart';
+import '../services/connectivity_service.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final ApiService _apiService;
   final LocalStorageService _storageService;
+  final OfflineQueueService _offlineQueue;
+  final ConnectivityService _connectivity;
 
   ProfileViewModel({
     required ApiService apiService,
     LocalStorageService? storageService,
   }) : _apiService = apiService,
-       _storageService = storageService ?? LocalStorageService();
+       _storageService = storageService ?? LocalStorageService(),
+       _offlineQueue = OfflineQueueService(),
+       _connectivity = ConnectivityService() {
+    _loadDraft();
+    _setupAutoSave();
+    _setupConnectivityListener();
+    _syncPendingTasksOnStart();
+  }
 
   bool _isLoading = false;
   String? _errorMessage;
   LandlordProfile? _currentProfile;
   String? _profilePhoto;
   XFile? _selectedImage;
+
+  bool _isOnline = true;
+  bool get isOnline => _isOnline;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -44,18 +58,93 @@ class ProfileViewModel extends ChangeNotifier {
     '\'', '"', ';', '--', '/*', '*/', 'xp_', 'sp_', '\\x'
   ];
 
+  void _setupAutoSave() {
+    nameController.addListener(_saveDraft);
+    emailController.addListener(_saveDraft);
+    phoneController.addListener(_saveDraft);
+    bioController.addListener(_saveDraft);
+  }
+
+  Future<void> _saveDraft() async {
+    final draft = {
+      'name': nameController.text,
+      'email': emailController.text,
+      'phone': phoneController.text,
+      'bio': bioController.text,
+      'profilePhoto': _profilePhoto,
+    };
+    await _offlineQueue.saveProfileDraft(draft);
+  }
+
+  Future<void> _loadDraft() async {
+    final draft = await _offlineQueue.loadProfileDraft();
+    if (draft != null) {
+      nameController.text = draft['name'] ?? '';
+      emailController.text = draft['email'] ?? '';
+      phoneController.text = draft['phone'] ?? '';
+      bioController.text = draft['bio'] ?? '';
+      _profilePhoto = draft['profilePhoto'];
+      notifyListeners();
+    }
+  }
+
+  Future<void> clearDraft() async {
+    await _offlineQueue.clearProfileDraft();
+    clearForm();
+  }
+
+  void _setupConnectivityListener() {
+    _connectivity.onConnectivityChanged.listen((isOnline) {
+      _isOnline = isOnline;
+      notifyListeners();
+      if (isOnline) {
+        _syncPendingTasks();
+      }
+    });
+  }
+
+  Future<void> _syncPendingTasksOnStart() async {
+    final isOnline = await _connectivity.checkConnection();
+    if (isOnline) {
+      await _syncPendingTasks();
+    }
+  }
+
+  Future<void> _syncPendingTasks() async {
+    final tasks = await _offlineQueue.getPendingTasks();
+    if (tasks.isEmpty) return;
+
+    for (final task in tasks) {
+      try {
+        if (task['type'] == 'update_profile') {
+          final data = task['data'] as Map<String, dynamic>;
+          
+          final profileData = {
+            'firstName': data['firstName'],
+            'lastName': data['lastName'],
+            'email': data['email'],
+            'phone': data['phone'],
+            'profilePhoto': data['profilePhoto'],
+            'bio': data['bio'],
+          };
+          
+          final result = await _apiService.updateProfile(profileData);
+          await _storageService.saveProfile(result);
+          await _offlineQueue.removeTask(task['id']);
+        }
+      } catch (e) {
+        // Error already handled silently
+      }
+    }
+  }
+
   String? _checkForSqlInjection(String value, String fieldName) {
     final upperValue = value.toUpperCase();
     
     for (final keyword in _reservedSqlKeywords) {
-      if (upperValue.contains(keyword) && value.length == keyword.length) {
+      final pattern = RegExp('\\b$keyword\\b', caseSensitive: false);
+      if (pattern.hasMatch(upperValue)) {
         return '$fieldName contains invalid characters';
-      }
-      if (upperValue.contains(keyword) && keyword.length > 3) {
-        final pattern = RegExp('\\b$keyword\\b', caseSensitive: false);
-        if (pattern.hasMatch(upperValue)) {
-          return '$fieldName contains invalid SQL keywords';
-        }
       }
     }
     
@@ -206,19 +295,13 @@ class ProfileViewModel extends ChangeNotifier {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text(
-            'Please fix the following errors',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          title: const Text('Please fix the following errors'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Required fields:',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
+                const Text('Required fields:', style: TextStyle(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 const Text('• Full name (3-100 characters)'),
                 const Text('• Email address (valid format)'),
@@ -235,10 +318,7 @@ class ProfileViewModel extends ChangeNotifier {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Errors found:',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red),
-                      ),
+                      const Text('Errors found:', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red)),
                       const SizedBox(height: 4),
                       Text(errorMessages, style: const TextStyle(fontSize: 13)),
                     ],
@@ -250,9 +330,7 @@ class ProfileViewModel extends ChangeNotifier {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF7B5BF2),
-              ),
+              style: TextButton.styleFrom(foregroundColor: const Color(0xFF7B5BF2)),
               child: const Text('OK'),
             ),
           ],
@@ -275,6 +353,7 @@ class ProfileViewModel extends ChangeNotifier {
         _selectedImage = image;
         _profilePhoto = image.path;
         validateField('photo', image.path);
+        _saveDraft();
         notifyListeners();
       }
     } catch (e) {
@@ -297,6 +376,7 @@ class ProfileViewModel extends ChangeNotifier {
         _selectedImage = image;
         _profilePhoto = image.path;
         validateField('photo', image.path);
+        _saveDraft();
         notifyListeners();
       }
     } catch (e) {
@@ -346,6 +426,7 @@ class ProfileViewModel extends ChangeNotifier {
   void setProfilePhoto(String path) {
     _profilePhoto = path;
     validateField('photo', path);
+    _saveDraft();
     notifyListeners();
   }
 
@@ -405,14 +486,39 @@ class ProfileViewModel extends ChangeNotifier {
       final result = await _apiService.updateProfile(profileData);
       
       await _storageService.saveProfile(result);
+      await _offlineQueue.clearProfileDraft();
       
       _currentProfile = result;
       _isLoading = false;
       notifyListeners();
       return _currentProfile;
     } catch (e) {
+      final errorStr = e.toString();
+      
+      if (errorStr.contains('SocketException') || 
+          errorStr.contains('Connection refused') ||
+          errorStr.contains('Failed to connect')) {
+        
+        final nameParts = nameController.text.trim().split(' ');
+        final firstName = nameParts.isNotEmpty ? nameParts[0] : '';
+        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+        
+        final taskData = {
+          'firstName': firstName,
+          'lastName': lastName,
+          'email': emailController.text.trim(),
+          'phone': phoneController.text.trim(),
+          'profilePhoto': _profilePhoto,
+          'bio': bioController.text,
+        };
+        
+        await _offlineQueue.addTask('update_profile', taskData);
+        _errorMessage = 'No internet connection. Profile saved and will be published when connection is restored.';
+      } else {
+        _errorMessage = errorStr;
+      }
+      
       _isLoading = false;
-      _errorMessage = e.toString();
       notifyListeners();
       return null;
     }

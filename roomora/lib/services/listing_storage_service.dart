@@ -9,7 +9,6 @@ class ListingStorageService {
   ListingStorageService._internal();
 
   Box? _listingsBox;
-  final Map<String, DateTime> _cacheTimestamps = {};
   static const int _maxCacheAgeMinutes = 30;
 
   Future<void> init() async {
@@ -25,7 +24,6 @@ class ListingStorageService {
     final listingsJson = listings.map((l) => json.encode(l.toJson())).toList();
     await _listingsBox?.put('cached_listings', listingsJson);
     await _listingsBox?.put('cached_timestamp', DateTime.now().toIso8601String());
-    _cacheTimestamps['listings'] = DateTime.now();
   }
 
   Future<List<Listing>> getCachedListings() async {
@@ -74,6 +72,5 @@ class ListingStorageService {
   Future<void> clearCache() async {
     await init();
     await _listingsBox?.clear();
-    _cacheTimestamps.clear();
   }
 }

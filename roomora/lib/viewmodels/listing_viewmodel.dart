@@ -5,16 +5,27 @@ import '../models/listing.dart';
 import '../services/api_service.dart';
 import '../services/listing_storage_service.dart';
 import '../services/models/api_listing.dart';
+import '../services/offline_queue_service.dart';
+import '../services/connectivity_service.dart';
 
 class ListingViewModel extends ChangeNotifier {
   final ApiService _apiService;
   final ListingStorageService _storageService;
+  final OfflineQueueService _offlineQueue;
+  final ConnectivityService _connectivity;
 
   ListingViewModel({
     required ApiService apiService,
     ListingStorageService? storageService,
   }) : _apiService = apiService,
-       _storageService = storageService ?? ListingStorageService();
+       _storageService = storageService ?? ListingStorageService(),
+       _offlineQueue = OfflineQueueService(),
+       _connectivity = ConnectivityService() {
+    _loadDraft();
+    _setupAutoSave();
+    _setupConnectivityListener();
+    _syncPendingTasksOnStart();
+  }
 
   final _progressSubject = BehaviorSubject<String>();
   Stream<String> get progressStream => _progressSubject.stream;
@@ -27,6 +38,9 @@ class ListingViewModel extends ChangeNotifier {
   Listing? _currentListing;
   List<Listing> _landlordListings = [];
   XFile? _selectedImage;
+
+  bool _isOnline = true;
+  bool get isOnline => _isOnline;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -93,6 +107,134 @@ class ListingViewModel extends ChangeNotifier {
   final List<String> _dangerousCharacters = [
     '\'', '"', ';', '--', '/*', '*/'
   ];
+
+  void _setupAutoSave() {
+    titleController.addListener(_saveDraft);
+    descriptionController.addListener(_saveDraft);
+    rentController.addListener(_saveDraft);
+    depositController.addListener(_saveDraft);
+    leaseLengthController.addListener(_saveDraft);
+  }
+
+  Future<void> _saveDraft() async {
+    final draft = {
+      'title': titleController.text,
+      'description': descriptionController.text,
+      'rent': rentController.text,
+      'deposit': depositController.text,
+      'leaseLength': leaseLengthController.text,
+      'moveInDate': _moveInDate?.toIso8601String(),
+      'selectedHouseRules': _selectedHouseRules,
+      'selectedAmenities': _selectedAmenities,
+      'selectedPropertyType': _selectedPropertyType,
+      'photos': _photos,
+      'coverPhoto': _coverPhoto,
+    };
+    await _offlineQueue.saveListingDraft(draft);
+  }
+
+  Future<void> _loadDraft() async {
+    final draft = await _offlineQueue.loadListingDraft();
+    if (draft != null) {
+      titleController.text = draft['title'] ?? '';
+      descriptionController.text = draft['description'] ?? '';
+      rentController.text = draft['rent'] ?? '';
+      depositController.text = draft['deposit'] ?? '';
+      leaseLengthController.text = draft['leaseLength'] ?? '';
+      if (draft['moveInDate'] != null) {
+        _moveInDate = DateTime.parse(draft['moveInDate']);
+      }
+      _selectedHouseRules = List<String>.from(draft['selectedHouseRules'] ?? []);
+      _selectedAmenities = List<String>.from(draft['selectedAmenities'] ?? []);
+      _selectedPropertyType = draft['selectedPropertyType'] ?? 'Studio';
+      _photos = List<String>.from(draft['photos'] ?? []);
+      _coverPhoto = draft['coverPhoto'];
+      _photosSubject.add(_photos);
+      notifyListeners();
+    }
+  }
+
+  Future<void> clearDraft() async {
+    await _offlineQueue.clearListingDraft();
+    clearForm();
+  }
+
+  void _setupConnectivityListener() {
+    _connectivity.onConnectivityChanged.listen((isOnline) {
+      _isOnline = isOnline;
+      notifyListeners();
+      if (isOnline) {
+        _syncPendingTasks();
+      }
+    });
+  }
+
+  Future<void> _syncPendingTasksOnStart() async {
+    final isOnline = await _connectivity.checkConnection();
+    if (isOnline) {
+      await _syncPendingTasks();
+    }
+  }
+
+  Future<void> _syncPendingTasks() async {
+    final tasks = await _offlineQueue.getPendingTasks();
+    if (tasks.isEmpty) return;
+
+    _progressSubject.add('Syncing ${tasks.length} pending listings...');
+    
+    for (final task in tasks) {
+      try {
+        if (task['type'] == 'create_listing') {
+          final data = task['data'] as Map<String, dynamic>;
+          
+          final listing = Listing(
+            id: 0,
+            title: data['title'],
+            listingType: 'property',
+            description: data['description'],
+            propertyType: data['propertyType'],
+            address: '123 University Ave',
+            city: 'Cambridge',
+            state: 'MA',
+            zipCode: '02139',
+            latitude: 42.3736,
+            longitude: -71.1097,
+            rent: data['rent'],
+            securityDeposit: data['deposit'],
+            utilitiesIncluded: false,
+            utilitiesCost: null,
+            availableDate: DateTime.parse(data['moveInDate']),
+            leaseTermMonths: data['leaseTermMonths'],
+            bedrooms: data['bedrooms'],
+            bathrooms: 1,
+            petsAllowed: data['petsAllowed'],
+            partiesAllowed: data['partiesAllowed'],
+            smokingAllowed: data['smokingAllowed'],
+            userId: data['landlordId'],
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+          
+          final apiListing = ApiListing.fromListing(listing);
+          final result = await _apiService.createListing(apiListing);
+          
+          for (String photoPath in data['photos']) {
+            if (photoPath.startsWith('/') || photoPath.startsWith('C:')) {
+              await _apiService.uploadListingPhoto(result.id.toString(), photoPath);
+            }
+          }
+          
+          await _offlineQueue.removeTask(task['id']);
+          _progressSubject.add('Synced: ${listing.title}');
+        }
+      } catch (e) {
+        // Error already handled silently
+      }
+    }
+    
+    await loadLandlordListings();
+    _progressSubject.add('');
+  }
 
   String? _validateTitle(String value) {
     if (value.isEmpty) return 'Title is required';
@@ -336,6 +478,7 @@ class ListingViewModel extends ChangeNotifier {
       _selectedHouseRules.add(rule);
     }
     validateField('houseRules', '');
+    _saveDraft();
     notifyListeners();
   }
 
@@ -346,18 +489,21 @@ class ListingViewModel extends ChangeNotifier {
       _selectedAmenities.add(amenity);
     }
     validateField('amenities', '');
+    _saveDraft();
     notifyListeners();
   }
 
   void setPropertyType(String type) {
     _selectedPropertyType = type;
     validateField('propertyType', type);
+    _saveDraft();
     notifyListeners();
   }
 
   void setMoveInDate(DateTime date) {
     _moveInDate = date;
     validateField('moveInDate', '');
+    _saveDraft();
     notifyListeners();
   }
 
@@ -442,6 +588,7 @@ class ListingViewModel extends ChangeNotifier {
     _photosSubject.add(_photos);
     _coverPhoto ??= photoPath;
     validateField('photos', '');
+    _saveDraft();
     notifyListeners();
   }
 
@@ -452,11 +599,13 @@ class ListingViewModel extends ChangeNotifier {
       _coverPhoto = _photos.isNotEmpty ? _photos.first : null;
     }
     validateField('photos', '');
+    _saveDraft();
     notifyListeners();
   }
 
   void setCoverPhoto(String photoPath) {
     _coverPhoto = photoPath;
+    _saveDraft();
     notifyListeners();
   }
 
@@ -503,82 +652,6 @@ class ListingViewModel extends ChangeNotifier {
     if (cached.isNotEmpty) {
       _landlordListings = cached;
       notifyListeners();
-    }
-  }
-
-  Future<Listing?> submitListing() async {
-    if (!validateForm()) {
-      return null;
-    }
-
-    _isLoading = true;
-    _errorMessage = null;
-    _progressSubject.add('Validating listing data...');
-    notifyListeners();
-
-    try {
-      final newListing = Listing(
-        id: 0,
-        title: titleController.text.trim(),
-        listingType: 'property',
-        description: descriptionController.text.trim(),
-        propertyType: _selectedPropertyType.toLowerCase().replaceAll(' ', '_'),
-        address: '123 University Ave',
-        city: 'Cambridge',
-        state: 'MA',
-        zipCode: '02139',
-        latitude: 42.3736,
-        longitude: -71.1097,
-        rent: double.parse(rentController.text),
-        securityDeposit: double.parse(depositController.text),
-        utilitiesIncluded: false,
-        utilitiesCost: null,
-        availableDate: _moveInDate!,
-        leaseTermMonths: int.parse(leaseLengthController.text.split(' ')[0]),
-        bedrooms: _getBedroomsFromType(_selectedPropertyType),
-        bathrooms: 1,
-        petsAllowed: _getPetsAllowed(),
-        partiesAllowed: _getPartiesAllowed(),
-        smokingAllowed: _getSmokingAllowed(),
-        userId: 1,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-
-      final apiListing = ApiListing.fromListing(newListing);
-
-      _progressSubject.add('Sending to server...');
-      final result = await _apiService.createListing(apiListing);
-      
-      _progressSubject.add('Uploading photos...');
-      for (String photoPath in _photos) {
-        if (photoPath.startsWith('/') || photoPath.startsWith('C:')) {
-          await _apiService.uploadListingPhoto(result.id.toString(), photoPath);
-        }
-      }
-      
-      _progressSubject.add('Saving to local cache...');
-      await _storageService.saveSingleListing(result.toListing());
-      
-      final updatedListings = List<Listing>.from(_landlordListings)..add(result.toListing());
-      await _storageService.saveListings(updatedListings);
-      
-      _currentListing = result.toListing();
-      _landlordListings = updatedListings;
-      _isLoading = false;
-      _progressSubject.add('Listing published!');
-      
-      await Future.delayed(const Duration(milliseconds: 500));
-      _progressSubject.add('');
-      
-      notifyListeners();
-      return _currentListing;
-    } catch (e) {
-      _isLoading = false;
-      _errorMessage = e.toString();
-      _progressSubject.add('Error: ${e.toString()}');
-      notifyListeners();
-      return null;
     }
   }
 
@@ -674,6 +747,114 @@ class ListingViewModel extends ChangeNotifier {
       _errorMessage = e.toString();
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<Listing?> submitListing() async {
+    if (!validateForm()) {
+      return null;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    _progressSubject.add('Validating listing data...');
+    notifyListeners();
+
+    try {
+      final newListing = Listing(
+        id: 0,
+        title: titleController.text.trim(),
+        listingType: 'property',
+        description: descriptionController.text.trim(),
+        propertyType: _selectedPropertyType.toLowerCase().replaceAll(' ', '_'),
+        address: '123 University Ave',
+        city: 'Cambridge',
+        state: 'MA',
+        zipCode: '02139',
+        latitude: 42.3736,
+        longitude: -71.1097,
+        rent: double.parse(rentController.text),
+        securityDeposit: double.parse(depositController.text),
+        utilitiesIncluded: false,
+        utilitiesCost: null,
+        availableDate: _moveInDate!,
+        leaseTermMonths: int.parse(leaseLengthController.text.split(' ')[0]),
+        bedrooms: _getBedroomsFromType(_selectedPropertyType),
+        bathrooms: 1,
+        petsAllowed: _getPetsAllowed(),
+        partiesAllowed: _getPartiesAllowed(),
+        smokingAllowed: _getSmokingAllowed(),
+        userId: 1,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      final apiListing = ApiListing.fromListing(newListing);
+
+      _progressSubject.add('Sending to server...');
+      final result = await _apiService.createListing(apiListing);
+      
+      _progressSubject.add('Uploading photos...');
+      for (String photoPath in _photos) {
+        if (photoPath.startsWith('/') || photoPath.startsWith('C:')) {
+          await _apiService.uploadListingPhoto(result.id.toString(), photoPath);
+        }
+      }
+      
+      _progressSubject.add('Saving to local cache...');
+      await _storageService.saveSingleListing(result.toListing());
+      await _offlineQueue.clearListingDraft();
+      
+      final updatedListings = List<Listing>.from(_landlordListings)..add(result.toListing());
+      await _storageService.saveListings(updatedListings);
+      
+      _currentListing = result.toListing();
+      _landlordListings = updatedListings;
+      _isLoading = false;
+      _progressSubject.add('Listing published!');
+      
+      clearForm();
+      await _offlineQueue.clearListingDraft();
+      
+      await Future.delayed(const Duration(milliseconds: 500));
+      _progressSubject.add('');
+      
+      notifyListeners();
+      return _currentListing;
+    } catch (e) {
+      final errorStr = e.toString();
+      
+      if (errorStr.contains('SocketException') || 
+          errorStr.contains('Connection refused') ||
+          errorStr.contains('Failed to connect')) {
+        
+        final taskData = {
+          'title': titleController.text.trim(),
+          'description': descriptionController.text.trim(),
+          'rent': double.parse(rentController.text),
+          'deposit': double.parse(depositController.text),
+          'leaseTermMonths': int.parse(leaseLengthController.text.split(' ')[0]),
+          'moveInDate': _moveInDate!.toIso8601String(),
+          'propertyType': _selectedPropertyType.toLowerCase().replaceAll(' ', '_'),
+          'bedrooms': _getBedroomsFromType(_selectedPropertyType),
+          'petsAllowed': _getPetsAllowed(),
+          'partiesAllowed': _getPartiesAllowed(),
+          'smokingAllowed': _getSmokingAllowed(),
+          'photos': _photos,
+          'landlordId': 1,
+        };
+        
+        await _offlineQueue.addTask('create_listing', taskData);
+        _errorMessage = 'No internet connection. Listing saved and will be published when connection is restored.';
+        _progressSubject.add('Saved offline - will sync when online');
+      } else {
+        _errorMessage = errorStr;
+        _progressSubject.add('Error: $errorStr');
+      }
+      
+      _isLoading = false;
+      notifyListeners();
+      return null;
     }
   }
 

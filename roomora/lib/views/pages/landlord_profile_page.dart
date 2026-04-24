@@ -23,18 +23,6 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
       viewModel.loadCachedProfile();
-      viewModel.nameController.addListener(() {
-        viewModel.validateField('name', viewModel.nameController.text);
-      });
-      viewModel.emailController.addListener(() {
-        viewModel.validateField('email', viewModel.emailController.text);
-      });
-      viewModel.phoneController.addListener(() {
-        viewModel.validateField('phone', viewModel.phoneController.text);
-      });
-      viewModel.bioController.addListener(() {
-        viewModel.validateField('bio', viewModel.bioController.text);
-      });
     });
   }
 
@@ -75,6 +63,29 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
                     children: [
                       const ProgressIndicatorWidget(currentStep: 1, totalSteps: 3),
                       const SizedBox(height: 24),
+                      
+                      if (!viewModel.isOnline)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.wifi_off, color: Colors.orange.shade700, size: 20),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'You are offline. Changes will be saved locally and synced when connection is restored.',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -138,7 +149,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
                           ),
                         ),
                       
-                      _buildContinueButton(context, viewModel),
+                      _buildContinueButton(viewModel),
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -521,7 +532,31 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     );
   }
 
-  Widget _buildContinueButton(BuildContext context, ProfileViewModel viewModel) {
+  void _navigateToListingPage(String landlordId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LandlordListingPage(landlordId: landlordId),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: Colors.white,
+          onPressed: () {},
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueButton(ProfileViewModel viewModel) {
     return CustomButton(
       text: 'Continue',
       onPressed: () {
@@ -531,27 +566,12 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
         }
         
         viewModel.submitProfile().then((profile) {
-          if (!mounted) return;
-          if (profile != null && context.mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => LandlordListingPage(landlordId: profile.id.toString()),
-              ),
-            );
-          } else if (viewModel.errorMessage != null && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(viewModel.errorMessage!),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 4),
-                action: SnackBarAction(
-                  label: 'OK',
-                  textColor: Colors.white,
-                  onPressed: () {},
-                ),
-              ),
-            );
+          if (mounted) {
+            if (profile != null) {
+              _navigateToListingPage(profile.id.toString());
+            } else if (viewModel.errorMessage != null) {
+              _showErrorSnackBar(viewModel.errorMessage!);
+            }
           }
         });
       },
