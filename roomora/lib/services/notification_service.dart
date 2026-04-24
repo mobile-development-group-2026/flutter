@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -28,7 +27,6 @@ class NotificationService {
     await _notifications.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        print('Notification clicked: ${response.payload}');
       },
     );
 
@@ -68,7 +66,7 @@ class NotificationService {
       priority: Priority.high,
       ticker: 'ticker',
       colorized: true,
-      ledColor: Color(0xFF7B5BF2),
+      ledColor: const Color(0xFF7B5BF2),
       ledOnMs: 1000,
       ledOffMs: 500,
     );

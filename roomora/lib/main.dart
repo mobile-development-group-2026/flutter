@@ -16,8 +16,11 @@ import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'views/pages/landlord_profile_page.dart';
 import 'views/pages/landing_page.dart';
 import 'views/pages/Onboarding/onboarding_page.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
   runApp(const RoomoraApp());
 }
 
@@ -27,7 +30,6 @@ class RoomoraApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiService = ApiService();
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(

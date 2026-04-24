@@ -44,14 +44,11 @@ class LocationService {
         return null;
       }
 
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      Position position = await Geolocator.getCurrentPosition();
       
       _currentPosition = position;
       return position;
     } catch (e) {
-      print('Error getting location: $e');
       return null;
     }
   }

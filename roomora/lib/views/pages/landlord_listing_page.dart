@@ -3,12 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../viewmodels/listing_viewmodel.dart';
 import '../../services/api_service.dart';
+import '../../services/listing_storage_service.dart';
 import '../widgets/photo_upload_widget.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
 import 'package:clerk_flutter/clerk_flutter.dart';
 
-class LandlordListingPage extends StatelessWidget {
+class LandlordListingPage extends StatefulWidget {
   final String landlordId;
 
   const LandlordListingPage({
@@ -17,147 +18,305 @@ class LandlordListingPage extends StatelessWidget {
   });
 
   @override
+  State<LandlordListingPage> createState() => _LandlordListingPageState();
+}
+
+class _LandlordListingPageState extends State<LandlordListingPage> {
+  late ListingViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _viewModel = Provider.of<ListingViewModel>(context, listen: false);
+      _viewModel.loadCachedListings();
+      _setupListeners();
+    });
+  }
+
+  void _setupListeners() {
+    _viewModel.titleController.addListener(() {
+      _viewModel.validateField('title', _viewModel.titleController.text);
+    });
+    _viewModel.descriptionController.addListener(() {
+      _viewModel.validateField('description', _viewModel.descriptionController.text);
+    });
+    _viewModel.rentController.addListener(() {
+      _viewModel.validateField('rent', _viewModel.rentController.text);
+    });
+    _viewModel.depositController.addListener(() {
+      _viewModel.validateField('deposit', _viewModel.depositController.text);
+    });
+    _viewModel.leaseLengthController.addListener(() {
+      _viewModel.validateField('leaseLength', _viewModel.leaseLengthController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _viewModel.titleController.dispose();
+    _viewModel.descriptionController.dispose();
+    _viewModel.rentController.dispose();
+    _viewModel.depositController.dispose();
+    _viewModel.leaseLengthController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onPublishPressed() async {
+    if (!_viewModel.validateForm()) {
+      _viewModel.showValidationAlert(context);
+      return;
+    }
+    final auth = ClerkAuth.of(context);
+    final tokenObj = await auth.sessionToken();
+    final token = tokenObj?.jwt ?? '';
+    _viewModel.submitListing(token).then((_) {
+      if (mounted) {
+        if (_viewModel.currentListing != null) {
+          _showSuccessDialog(context);
+        } else if (_viewModel.errorMessage != null) {
+          _showErrorDialog(context, _viewModel.errorMessage!);
+        }
+      }
+    });
+  }
+
+  void _onAddPhoto(String path) {
+    _viewModel.addPhoto(path);
+  }
+
+  void _onRemovePhoto(String path) {
+    _viewModel.removePhoto(path);
+  }
+
+  void _onSetCover(String path) {
+    _viewModel.setCoverPhoto(path);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ListingViewModel(apiService: ApiService()),
-      child: Scaffold(
+      create: (_) => ListingViewModel(
+        apiService: ApiService(),
+        storageService: ListingStorageService(),
+      ),
+      child: Consumer<ListingViewModel>(
+        builder: (context, viewModel, child) {
+          if (_viewModel != viewModel) {
+            _viewModel = viewModel;
+          }
+          return _buildContent(context, viewModel);
+        },
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, ListingViewModel viewModel) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFFCFCFD),
+      appBar: AppBar(
         backgroundColor: const Color(0xFFFCFCFD),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFFCFCFD),
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF212327)),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'Create Listing',
-            style: TextStyle(
-              color: Color(0xFF212327),
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          centerTitle: true,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF212327)),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: SafeArea(
-          child: Consumer<ListingViewModel>(
-            builder: (context, viewModel, child) {
-              return Stack(
-                children: [
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
+        title: const Text(
+          'Create Listing',
+          style: TextStyle(
+            color: Color(0xFF212327),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ProgressIndicatorWidget(currentStep: 2, totalSteps: 3),
+                const SizedBox(height: 24),
+
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0ECFE),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Color(0xFF7B5BF2).withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Required Fields',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF7B5BF2),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        '• Property title (5-100 characters)\n• Description (20-2000 characters)\n• Monthly rent (min \$100, max \$10,000)\n• Security deposit (max \$5,000)\n• Lease length (1-60 months)\n• Move-in date (within 1 year)\n• At least one photo\n• Property type\n• At least one amenity\n• At least one house rule',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF6E7681)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                const Text(
+                  'PHOTOS',
+                  style: TextStyle(
+                    color: Color(0xFF7B5BF2),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                StreamBuilder<List<String>>(
+                  stream: viewModel.photosStream,
+                  builder: (context, snapshot) {
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const ProgressIndicatorWidget(currentStep: 2, totalSteps: 3),
-                        const SizedBox(height: 24),
-                        
-                        RichText(
-                          text: const TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'New ',
-                                style: TextStyle(
-                                  color: Color(0xFF212327),
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.56,
-                                ),
-                              ),
-                              TextSpan(
-                                text: 'listing',
-                                style: TextStyle(
-                                  color: Color(0xFF7B5BF2),
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.56,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Fill in your property details. You can edit anytime before publishing.',
-                          style: TextStyle(
-                            color: Color(0xFF6E7681),
-                            fontSize: 14,
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-
                         PhotoUploadWidget(
-                          photos: viewModel.photos,
+                          photos: snapshot.data ?? viewModel.photos,
                           coverPhoto: viewModel.coverPhoto,
-                          onAddPhoto: () => viewModel.showImageSourceOptions(context),
-                          onRemovePhoto: (path) => viewModel.removePhoto(path),
-                          onSetCover: (path) => viewModel.setCoverPhoto(path),
+                          onAddPhoto: _onAddPhoto,
+                          onRemovePhoto: _onRemovePhoto,
+                          onSetCover: _onSetCover,
+                        ),
+                        _buildErrorText(viewModel.fieldErrors['photos']),
+                      ],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 32),
+                _buildDetailsSection(viewModel),
+                const SizedBox(height: 24),
+                _buildPropertyTypeSection(viewModel),
+                const SizedBox(height: 24),
+                _buildLeaseAndDateSection(context, viewModel),
+                const SizedBox(height: 24),
+                _buildAmenitiesSection(viewModel),
+                const SizedBox(height: 24),
+                _buildHouseRulesSection(viewModel),
+                const SizedBox(height: 24),
+                _buildDescriptionSection(viewModel),
+                const SizedBox(height: 32),
+
+                if (viewModel.errorMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error, color: Colors.red.shade700, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            viewModel.errorMessage!,
+                            style: TextStyle(color: Colors.red.shade700, fontSize: 13),
                           ),
-
-                        _buildDetailsSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildPropertyTypeSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildLeaseAndDateSection(context, viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildAmenitiesSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildHouseRulesSection(viewModel),
-                        const SizedBox(height: 24),
-
-                        _buildDescriptionSection(viewModel),
-                        const SizedBox(height: 32),
-
-                        if (viewModel.errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.shade200),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.error, color: Colors.red.shade700, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      viewModel.errorMessage!,
-                                      style: TextStyle(color: Colors.red.shade700, fontSize: 13),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                        _buildActionButtons(context, viewModel),
-                        const SizedBox(height: 20),
+                        ),
                       ],
                     ),
                   ),
-                  
-                  if (viewModel.isLoading)
-                    Container(
-                      color: Colors.black.withOpacity(0.3),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
-                        ),
+                const SizedBox(height: 16),
+
+                CustomButton(
+                  text: 'Publish Listing',
+                  onPressed: _onPublishPressed,
+                  isPrimary: true,
+                ),
+                const SizedBox(height: 12),
+                CustomButton(
+                  text: 'Save as Draft',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Draft saved'),
+                        backgroundColor: Color(0xFF7B5BF2),
+                      ),
+                    );
+                  },
+                  isPrimary: false,
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+
+          StreamBuilder<String>(
+            stream: viewModel.progressStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return Container(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      margin: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B5BF2)),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            snapshot.data!,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF212327),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
-                ],
-              );
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
             },
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorText(String? error) {
+    if (error == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, left: 12),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, size: 14, color: Colors.red.shade700),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              error,
+              style: TextStyle(fontSize: 11, color: Colors.red.shade700),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -166,24 +325,27 @@ class LandlordListingPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'DETAILS',
-          style: TextStyle(
-            color: Color(0xFF6E7681),
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
+        Row(
+          children: [
+            const Text(
+              'PROPERTY TITLE',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        
+        const SizedBox(height: 4),
         const Text(
-          'PROPERTY TITLE',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+          '5-100 characters. Describe your property briefly.',
+          style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
         ),
         const SizedBox(height: 8),
         Container(
@@ -193,7 +355,7 @@ class LandlordListingPage extends StatelessWidget {
             border: Border.all(color: const Color(0xFFE4E7EC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -208,6 +370,7 @@ class LandlordListingPage extends StatelessWidget {
             ),
           ),
         ),
+        _buildErrorText(viewModel.fieldErrors['title']),
         const SizedBox(height: 16),
 
         Row(
@@ -216,13 +379,27 @@ class LandlordListingPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'SECURITY DEPOSIT',
+                        style: TextStyle(
+                          color: Color(0xFF7B5BF2),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        '*',
+                        style: TextStyle(color: Colors.red, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
                   const Text(
-                    'SECURITY DEPOSIT',
-                    style: TextStyle(
-                      color: Color(0xFF2F3237),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    'Max \$5,000',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -232,7 +409,7 @@ class LandlordListingPage extends StatelessWidget {
                       border: Border.all(color: const Color(0xFFE4E7EC)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -265,6 +442,7 @@ class LandlordListingPage extends StatelessWidget {
                       ],
                     ),
                   ),
+                  _buildErrorText(viewModel.fieldErrors['deposit']),
                 ],
               ),
             ),
@@ -273,13 +451,27 @@ class LandlordListingPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'MONTHLY RENT',
+                        style: TextStyle(
+                          color: Color(0xFF7B5BF2),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        '*',
+                        style: TextStyle(color: Colors.red, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
                   const Text(
-                    'MONTHLY RENT',
-                    style: TextStyle(
-                      color: Color(0xFF2F3237),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    'Min \$100, Max \$10,000',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -289,7 +481,7 @@ class LandlordListingPage extends StatelessWidget {
                       border: Border.all(color: const Color(0xFFE4E7EC)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -322,6 +514,7 @@ class LandlordListingPage extends StatelessWidget {
                       ],
                     ),
                   ),
+                  _buildErrorText(viewModel.fieldErrors['rent']),
                 ],
               ),
             ),
@@ -335,13 +528,22 @@ class LandlordListingPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'PROPERTY TYPE',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+        Row(
+          children: [
+            const Text(
+              'PROPERTY TYPE',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -372,6 +574,7 @@ class LandlordListingPage extends StatelessWidget {
             );
           }).toList(),
         ),
+        _buildErrorText(viewModel.fieldErrors['propertyType']),
       ],
     );
   }
@@ -384,13 +587,27 @@ class LandlordListingPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  const Text(
+                    'LEASE LENGTH',
+                    style: TextStyle(
+                      color: Color(0xFF7B5BF2),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    '*',
+                    style: TextStyle(color: Colors.red, fontSize: 13),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
               const Text(
-                'LEASE LENGTH',
-                style: TextStyle(
-                  color: Color(0xFF2F3237),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+                'Format: "12 months" (1-60 months)',
+                style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
               ),
               const SizedBox(height: 8),
               Container(
@@ -400,7 +617,7 @@ class LandlordListingPage extends StatelessWidget {
                   border: Border.all(color: const Color(0xFFE4E7EC)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -415,6 +632,7 @@ class LandlordListingPage extends StatelessWidget {
                   ),
                 ),
               ),
+              _buildErrorText(viewModel.fieldErrors['leaseLength']),
             ],
           ),
         ),
@@ -423,13 +641,27 @@ class LandlordListingPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  const Text(
+                    'AVAILABLE FROM',
+                    style: TextStyle(
+                      color: Color(0xFF7B5BF2),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    '*',
+                    style: TextStyle(color: Colors.red, fontSize: 13),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
               const Text(
-                'AVAILABLE FROM',
-                style: TextStyle(
-                  color: Color(0xFF2F3237),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+                'Within 1 year from today',
+                style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
               ),
               const SizedBox(height: 8),
               GestureDetector(
@@ -450,7 +682,7 @@ class LandlordListingPage extends StatelessWidget {
                       );
                     },
                   );
-                  if (date != null) {
+                  if (date != null && mounted) {
                     viewModel.setMoveInDate(date);
                   }
                 },
@@ -462,7 +694,7 @@ class LandlordListingPage extends StatelessWidget {
                     border: Border.all(color: const Color(0xFFE4E7EC)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.02),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -490,6 +722,7 @@ class LandlordListingPage extends StatelessWidget {
                   ),
                 ),
               ),
+              _buildErrorText(viewModel.fieldErrors['moveInDate']),
             ],
           ),
         ),
@@ -501,13 +734,27 @@ class LandlordListingPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            const Text(
+              'AMENITIES',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
         const Text(
-          'AMENITIES',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+          'Select at least one',
+          style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -538,6 +785,7 @@ class LandlordListingPage extends StatelessWidget {
             );
           }).toList(),
         ),
+        _buildErrorText(viewModel.fieldErrors['amenities']),
       ],
     );
   }
@@ -546,13 +794,27 @@ class LandlordListingPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            const Text(
+              'NON-NEGOTIABLE RULES',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
         const Text(
-          'NON-NEGOTIABLE RULES',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+          'Select at least one',
+          style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -583,6 +845,7 @@ class LandlordListingPage extends StatelessWidget {
             );
           }).toList(),
         ),
+        _buildErrorText(viewModel.fieldErrors['houseRules']),
       ],
     );
   }
@@ -591,13 +854,27 @@ class LandlordListingPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            const Text(
+              'DESCRIPTION',
+              style: TextStyle(
+                color: Color(0xFF7B5BF2),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '*',
+              style: TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
         const Text(
-          'DESCRIPTION',
-          style: TextStyle(
-            color: Color(0xFF2F3237),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+          '20-2000 characters. Describe your property in detail.',
+          style: TextStyle(fontSize: 11, color: Color(0xFFB0B6BF)),
         ),
         const SizedBox(height: 8),
         Container(
@@ -607,7 +884,7 @@ class LandlordListingPage extends StatelessWidget {
             border: Border.all(color: const Color(0xFFE4E7EC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -617,7 +894,7 @@ class LandlordListingPage extends StatelessWidget {
             controller: viewModel.descriptionController,
             maxLines: 6,
             decoration: const InputDecoration(
-              hintText: 'Describe your property, the neighborhood, nearby amenities, etc.',
+              hintText: 'Describe the location, layout, nearby amenities, etc.',
               border: InputBorder.none,
               contentPadding: EdgeInsets.all(16),
             ),
@@ -674,15 +951,17 @@ class LandlordListingPage extends StatelessWidget {
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Success!'),
         content: const Text('Your listing has been created successfully.'),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
+              Navigator.pop(dialogContext);
+              if (mounted) {
+                Navigator.pop(context, true);
+              }
             },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF7B5BF2),
@@ -697,13 +976,13 @@ class LandlordListingPage extends StatelessWidget {
   void _showErrorDialog(BuildContext context, String error) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Error'),
         content: Text(error),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF7B5BF2),
             ),

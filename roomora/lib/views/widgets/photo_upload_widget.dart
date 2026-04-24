@@ -4,7 +4,7 @@ import 'dart:io';
 class PhotoUploadWidget extends StatelessWidget {
   final List<String> photos;
   final String? coverPhoto;
-  final VoidCallback onAddPhoto;
+  final Function(String) onAddPhoto;
   final Function(String) onRemovePhoto;
   final Function(String) onSetCover;
 
@@ -67,7 +67,7 @@ class PhotoUploadWidget extends StatelessWidget {
 
   Widget _buildEmptyState() {
     return GestureDetector(
-      onTap: onAddPhoto,
+      onTap: () => onAddPhoto(''),
       child: Container(
         height: 200,
         width: double.infinity,
@@ -85,7 +85,7 @@ class PhotoUploadWidget extends StatelessWidget {
             Icon(
               Icons.add_photo_alternate_outlined,
               size: 48,
-              color: const Color(0xFF6E7681).withOpacity(0.5),
+              color: const Color(0xFF6E7681).withValues(alpha: 0.5),
             ),
             const SizedBox(height: 12),
             const Text(
@@ -182,7 +182,7 @@ class PhotoUploadWidget extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -198,7 +198,7 @@ class PhotoUploadWidget extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.8),
+                    color: Colors.red.withValues(alpha: 0.8),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -217,7 +217,7 @@ class PhotoUploadWidget extends StatelessWidget {
 
   Widget _buildAddButton() {
     return GestureDetector(
-      onTap: onAddPhoto,
+      onTap: () => onAddPhoto(''),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF6F7F8),
@@ -237,7 +237,7 @@ class PhotoUploadWidget extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
