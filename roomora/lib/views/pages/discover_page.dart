@@ -201,8 +201,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
         itemBuilder: (context, index) {
           if (index == 0) return _buildSectionHeader(listings.length);
           final listing = listings[index - 1];
-          if (index == 1) return _buildFeaturedCard(listing);
-          return _buildCompactCard(listing);
+          return _buildCompactCard(listing); 
         },
       ),
     );
