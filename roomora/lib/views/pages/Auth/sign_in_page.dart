@@ -47,7 +47,7 @@ class _SignInViewState extends State<SignInView> {
             padding: EdgeInsets.only(
               left: 24,
               right: 24,
-              top: 12, // Reducido para dar espacio a la "pestaña" gris
+              top: 12,
               bottom: MediaQuery.of(context).viewInsets.bottom + 32,
             ),
               child: Column(

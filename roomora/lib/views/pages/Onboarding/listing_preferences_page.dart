@@ -17,10 +17,10 @@ class ListingPreferencesView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Encontrá tu', style: h1Black),
-              const Text('próximo hogar', style: h1Purple),
+              const Text('Find your', style: h1Black),
+              const Text('next home', style: h1Purple),
               const SizedBox(height: 20),
-              PrefSection(icon: Icons.attach_money, title: 'PRESUPUESTO MENSUAL', child:
+              PrefSection(icon: Icons.attach_money, title: 'MONTHLY BUDGET', child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('\$${vm.maxBudget ?? 0}',
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700,
@@ -36,7 +36,7 @@ class ListingPreferencesView extends StatelessWidget {
                     ));
                   }).toList()),
                 ])),
-              PrefSection(icon: Icons.home_outlined, title: 'TIPO DE PROPIEDAD', child:
+              PrefSection(icon: Icons.home_outlined, title: 'PROPERTY TYPE', child:
                 GridView.count(
                   crossAxisCount: 2, shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -65,14 +65,14 @@ class ListingPreferencesView extends StatelessWidget {
                       ),
                     );
                   }).toList())),
-              PrefSection(icon: Icons.event_outlined, title: 'DURACIÓN DEL CONTRATO', child:
+              PrefSection(icon: Icons.event_outlined, title: 'CONTRACT TERM', child:
                 Row(children: ListingPreferencesViewModel.leaseOptions.map((months) =>
                   Expanded(child: Padding(
                     padding: const EdgeInsets.only(right: 6),
-                    child: CustomChip(label: '$months meses',
+                    child: CustomChip(label: '$months months',
                         selected: vm.leaseLength == months,
                         onTap: () => vm.setLeaseLength(months))))).toList())),
-              PrefSection(icon: Icons.star_outline, title: 'AMENIDADES IMPRESCINDIBLES', child:
+              PrefSection(icon: Icons.star_outline, title: 'ESSENTIAL AMENITIES', child:
                 GridView.count(
                   crossAxisCount: 3, shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),

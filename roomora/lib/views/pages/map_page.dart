@@ -35,7 +35,7 @@ class _MapPageState extends State<MapPage> {
     if (token != null && mounted) {
       context.read<MapViewModel>().initialize(token); 
     } else {
-      print('No se pudo obtener el token para el mapa');
+      print('The map token could not be obtained');
     }
   }
   @override

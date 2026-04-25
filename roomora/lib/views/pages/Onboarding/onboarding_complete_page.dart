@@ -29,19 +29,19 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
   List<Map<String, dynamic>> get perks => isStudent
       ? [
           {'icon': Icons.verified_user, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Badge verificado en tu perfil', 'sub': 'Los demás saben que sos un estudiante real'},
+           'title': 'Verified badge on your profile', 'sub': 'Others know you are a real student'},
           {'icon': Icons.home, 'color': ExtraAppColors.yellow500, 'bg': ExtraAppColors.yellow100,
-           'title': 'Acceso a listings exclusivos', 'sub': 'Landlords que solo alquilan a estudiantes'},
+           'title': 'Access to exclusive listings', 'sub': 'Landlords that only rent to students'},
           {'icon': Icons.people, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Matching de roommates', 'sub': 'Encontrá personas que se adapten a tu estilo'},
+           'title': 'Roommate matching', 'sub': 'Find people who match your lifestyle'},
         ]
       : [
           {'icon': Icons.verified_user, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Badge de landlord verificado', 'sub': 'Los estudiantes confían en tus listings'},
+           'title': 'Verified landlord badge', 'sub': 'Verified students trust your listings'},
           {'icon': Icons.list_alt, 'color': ExtraAppColors.yellow500, 'bg': ExtraAppColors.yellow100,
-           'title': 'Publicá listings ilimitados', 'sub': 'Llegá a estudiantes verificados'},
+           'title': 'Publish unlimited listings', 'sub': 'Reach verified students'},
           {'icon': Icons.people, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Herramientas de screening', 'sub': 'Encontrá inquilinos confiables'},
+           'title': 'Screening tools', 'sub': 'Find reliable tenants'},
         ];
 
   @override
@@ -104,17 +104,17 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const Text('Estás verificado,',
+                  const Text('You are verified,',
                       style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700,
                           color: AppColors.neutral900, fontFamily: 'Sora')),
                   Text('${widget.firstName} 🎉',
                       style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700,
                           color: AppColors.purple500, fontFamily: 'Sora')),
                   const SizedBox(height: 6),
-                  Text('Tu estado de ${isStudent ? "estudiante" : "propietario"} fue confirmado.',
+                  Text('Your status as ${isStudent ? "a student" : "a landlord"} has been confirmed.',
                       style: const TextStyle(fontSize: 14, color: AppColors.neutral600,
                           fontFamily: 'Sora')),
-                  const Text('Bienvenido a Roomora.',
+                  const Text('Welcome to Roomora.',
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
                           color: AppColors.neutral900, fontFamily: 'Sora')),
                   const SizedBox(height: 24),
@@ -131,7 +131,7 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('DESBLOQUEADO PARA VOS',
+                        const Text('UNLOCKED FOR YOU',
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
                                 color: AppColors.neutral500, letterSpacing: 0.8,
                                 fontFamily: 'Sora')),
@@ -179,7 +179,7 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
                             borderRadius: BorderRadius.circular(16)),
                       ),
                       child: Text(
-                        isStudent ? 'Buscar roommate  →' : 'Publicar listing  →',
+                        isStudent ? 'Find a roommate  →' : 'Publish listing  →',
                         style: const TextStyle(color: Colors.white,
                             fontSize: 16, fontWeight: FontWeight.w600,
                             fontFamily: 'Sora'),

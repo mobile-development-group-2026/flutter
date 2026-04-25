@@ -565,7 +565,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
           return;
         }
 
-        print('Boton Continue presionado');
+        print('Continue button held down');
         final auth = ClerkAuth.of(context, listen: false);
         final tokenObj = await auth.sessionToken();
         final token = tokenObj?.jwt;
@@ -575,7 +575,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
           if (!context.mounted) return;
 
           if (profile != null) {
-            print('Perfil creado, navegando...');
+            print('Profile created, loading...');
             _navigateToListingPage(profile.id.toString());
           } else if (viewModel.errorMessage != null) {
             print('Error: ${viewModel.errorMessage}');
@@ -583,7 +583,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
           }
         } else {
           if (context.mounted) {
-            _showErrorSnackBar('Error de sesión. Por favor, volvé a ingresar.');
+            _showErrorSnackBar('Session error. Please log in again.');
           }
         }
       },
