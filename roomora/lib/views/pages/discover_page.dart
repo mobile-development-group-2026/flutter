@@ -5,6 +5,7 @@ import '/../theme/colors.dart';
 import '/../viewmodels/listing_viewmodel.dart';
 import '/../models/listing.dart';
 import 'map_page.dart';
+import 'property_detail_page.dart';
 import 'package:clerk_flutter/clerk_flutter.dart';
 import '/../../models/user_session.dart';
 
@@ -49,14 +50,13 @@ class _DiscoverPageState extends State<DiscoverPage> {
             Expanded(
               child: Consumer<ListingViewModel>(
                 builder: (context, vm, _) {
-                  if (vm.isLoading) {
+                  if (vm.isLoading && vm.landlordListings.isEmpty) {
                     return const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.purple500,
                       ),
                     );
                   }
-
                   if (vm.errorMessage != null) {
                     return Center(
                       child: Column(
@@ -190,15 +190,21 @@ class _DiscoverPageState extends State<DiscoverPage> {
   }
 
   Widget _buildListings(List<Listing> listings) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: listings.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) return _buildSectionHeader(listings.length);
-        final listing = listings[index - 1];
-        if (index == 1) return _buildFeaturedCard(listing);
-        return _buildCompactCard(listing);
-      },
+    return RefreshIndicator(
+      color: AppColors.purple500,
+      backgroundColor: Colors.white,
+      onRefresh: _cargarListings,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: listings.length + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) return _buildSectionHeader(listings.length);
+          final listing = listings[index - 1];
+          if (index == 1) return _buildFeaturedCard(listing);
+          return _buildCompactCard(listing);
+        },
+      ),
     );
   }
 
@@ -251,7 +257,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
   }
 
   Widget _buildFeaturedCard(Listing listing) {
-    return Container(
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PropertyDetailPage(listing: listing),
+        ),
+      ),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -532,11 +545,19 @@ class _DiscoverPageState extends State<DiscoverPage> {
           ),
         ],
       ),
-    );
+    ),   
+    );   
   }
 
   Widget _buildCompactCard(Listing listing) {
-    return Container(
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PropertyDetailPage(listing: listing),
+        ),
+      ),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -621,7 +642,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
           ),
         ],
       ),
-    );
+    )   // 
+    );   // cierra GestureDetector
   }
 
   List<Widget> _buildAmenityChips(Listing listing, {bool small = false}) {
@@ -655,28 +677,41 @@ class _DiscoverPageState extends State<DiscoverPage> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(LucideIcons.searchX, size: 48, color: AppColors.neutral400),
-          const SizedBox(height: 16),
-          Text(
-            'No hay listings disponibles',
-            style: TextStyle(
-              fontFamily: 'Sora',
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.neutral700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Vuelve más tarde',
-            style: TextStyle(
-              fontFamily: 'Sora',
-              fontSize: 13,
-              color: AppColors.neutral500,
+    return RefreshIndicator(
+      color: AppColors.purple500,
+      backgroundColor: Colors.white,
+      onRefresh: _cargarListings,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(LucideIcons.searchX, size: 48, color: AppColors.neutral400),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No hay listings disponibles',
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.neutral700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Vuelve más tarde (o arrastrá para recargar)',
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 13,
+                      color: AppColors.neutral500,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
