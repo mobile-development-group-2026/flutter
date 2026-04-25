@@ -27,8 +27,8 @@ class BuildYourProfileView extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 isStudent
-                    ? 'Un buen perfil te da 3× más matches.'
-                    : 'Ayudá a los inquilinos a conocerte.',
+                    ? 'A good profile gets you three times as many matches.'
+                    : 'Help tenants get to know you.',
                 style: const TextStyle(
                     fontSize: 14, color: AppColors.neutral700, fontFamily: 'Sora'),
               ),
@@ -40,16 +40,16 @@ class BuildYourProfileView extends StatelessWidget {
 
               if (isStudent) ...[
                 _OnboardingField(
-                  label: 'UNIVERSIDAD',
-                  hint: 'ej. Tec de Monterrey',
+                  label: 'UNIVERSITY',
+                  hint: 'e.g., Tec de Monterrey',
                   icon: Icons.school_outlined,
                   onChanged: (v) => vm.university = v,
                 ),
                 const SizedBox(height: 16),
 
                 _DropdownField(
-                  label: 'CARRERA',
-                  hint: 'Seleccioná tu carrera',
+                  label: 'MAJOR',
+                  hint: 'Select your major',
                   value: vm.major,
                   options: BuildYourProfileViewModel.majors,
                   onChanged: (v) { vm.major = v; vm.notifyListeners(); },
@@ -61,7 +61,7 @@ class BuildYourProfileView extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _YearDropdown(
-                      label: 'AÑO DE NAC.',
+                      label: 'BIRTH YEAR',
                       icon: Icons.calendar_today_outlined,
                       years: BuildYourProfileViewModel.birthYears,
                       value: vm.birthYear,
@@ -72,7 +72,7 @@ class BuildYourProfileView extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _YearDropdown(
-                        label: 'AÑO DE GRAD.',
+                        label: 'GRADUATION YEAR',
                         icon: Icons.school_outlined,
                         years: BuildYourProfileViewModel.gradYears,
                         value: vm.graduationYear,
@@ -92,7 +92,7 @@ class BuildYourProfileView extends StatelessWidget {
               ),
               if (vm.bio.isNotEmpty && vm.bio.length < 5) ...[
                 const SizedBox(height: 6),
-                const Text('Agregá al menos 5 caracteres.',
+                const Text('Add at least 5 characters.',
                     style: TextStyle(
                         color: AppColors.purple500,
                         fontSize: 12,
@@ -185,7 +185,7 @@ class _PhotoPicker extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.camera_alt_outlined, color: AppColors.neutral700),
-                  title: const Text('Tomar foto', 
+                  title: const Text('Take a photo', 
                       style: TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, color: AppColors.neutral900)),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -194,7 +194,7 @@ class _PhotoPicker extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.photo_library_outlined, color: AppColors.neutral700),
-                  title: const Text('Elegir de la galería', 
+                  title: const Text('Select from the gallery', 
                       style: TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, color: AppColors.neutral900)),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -247,7 +247,7 @@ class _PhotoPicker extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Foto de perfil',
+                const Text('Profile picture',
                     style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -256,8 +256,8 @@ class _PhotoPicker extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   isStudent
-                      ? 'Una foto clara genera más confianza con landlords y roommates.'
-                      : 'Una foto clara genera más confianza con los inquilinos.',
+                      ? 'A clear photo generates more trust with landlords and roommates.'
+                      : 'A clear photo generates more trust with tenants.',
                   style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.neutral700,
@@ -446,7 +446,7 @@ class _YearDropdown extends StatelessWidget {
                 children: [
                   Icon(icon, size: 16, color: AppColors.neutral600),
                   const SizedBox(width: 8),
-                  const Text('Seleccioná',
+                  const Text('Select',
                       style: TextStyle(
                           color: AppColors.neutral600,
                           fontSize: 14,

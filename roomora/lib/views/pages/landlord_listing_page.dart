@@ -921,7 +921,7 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
               }
             } else {
               if (context.mounted) {
-                _showErrorDialog(context, "Error de autenticación. Por favor, iniciá sesión nuevamente.");
+                _showErrorDialog(context, "Authentication error. Please log in again.");
               }
             }
           },

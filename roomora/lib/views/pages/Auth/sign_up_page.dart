@@ -69,7 +69,7 @@ class _SignUpViewState extends State<SignUpView> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             title: const Text(
-              'Crear cuenta',
+              'Create an account',
               style: TextStyle(
                 color: AppColors.neutral900,
                 fontSize: 18,
@@ -96,17 +96,17 @@ class _SignUpViewState extends State<SignUpView> {
                       ),
                       children: [
                         TextSpan(
-                            text: 'Encontrá tu\n',
+                            text: 'Find your\n',
                             style: TextStyle(color: AppColors.neutral900)),
                         TextSpan(
-                            text: 'lugar perfecto',
+                            text: 'perfect place',
                             style: TextStyle(color: AppColors.purple500)),
                       ],
                     ),
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Creá tu cuenta gratis para empezar.',
+                    'Create your free account to get started.',
                     style: TextStyle(
                         color: AppColors.neutral700,
                         fontSize: 14,
@@ -118,13 +118,13 @@ class _SignUpViewState extends State<SignUpView> {
                   Row(
                     children: [
                       _RoleChip(
-                        label: 'Estudiante',
+                        label: 'Student',
                         selected: _vm.role == 'student',
                         onTap: () => _vm.setRole('student'),
                       ),
                       const SizedBox(width: 12),
                       _RoleChip(
-                        label: 'Propietario',
+                        label: 'Landlord',
                         selected: _vm.role == 'landlord',
                         onTap: () => _vm.setRole('landlord'),
                       ),
@@ -138,7 +138,7 @@ class _SignUpViewState extends State<SignUpView> {
                       Expanded(
                         child: _AuthField(
                           controller: _firstCtrl,
-                          label: 'NOMBRE',
+                          label: 'NAME',
                           hint: 'Ana',
                           onChanged: (v) => _vm.firstName = v,
                         ),
@@ -147,7 +147,7 @@ class _SignUpViewState extends State<SignUpView> {
                       Expanded(
                         child: _AuthField(
                           controller: _lastCtrl,
-                          label: 'APELLIDO',
+                          label: 'LAST NAME',
                           hint: 'García',
                           onChanged: (v) => _vm.lastName = v,
                         ),
@@ -159,7 +159,7 @@ class _SignUpViewState extends State<SignUpView> {
                   _AuthField(
                     controller: _emailCtrl,
                     label: 'EMAIL',
-                    hint: 'vos@universidad.edu',
+                    hint: 'you@university.edu',
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     onChanged: (v) => _vm.email = v,
@@ -168,7 +168,7 @@ class _SignUpViewState extends State<SignUpView> {
 
                   _AuthField(
                     controller: _phoneCtrl,
-                    label: 'TELÉFONO (opcional)',
+                    label: 'PHONE (optional)',
                     hint: '+57 300 000 0000',
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
@@ -178,8 +178,8 @@ class _SignUpViewState extends State<SignUpView> {
 
                   _AuthField(
                     controller: _passCtrl,
-                    label: 'CONTRASEÑA',
-                    hint: 'Mínimo 8 caracteres',
+                    label: 'PASSWORD',
+                    hint: 'Minimum 8 characters',
                     icon: Icons.lock_outline,
                     obscure: _obscurePassword,
                     onChanged: (v) => _vm.password = v,
@@ -215,7 +215,7 @@ class _SignUpViewState extends State<SignUpView> {
                         child: Padding(
                           padding: EdgeInsets.only(top: 12),
                           child: Text(
-                            'Acepto los Términos de Servicio y la Política de Privacidad',
+                            'I agree to the Terms of Service and Privacy Policy',
                             style: TextStyle(
                                 fontSize: 13,
                                 color: AppColors.neutral700,
@@ -272,7 +272,7 @@ class _SignUpViewState extends State<SignUpView> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text(
-                          '¿Ya tenés cuenta?',
+                          'Already have an account?',
                           style: TextStyle(
                               color: AppColors.neutral700,
                               fontSize: 14,
@@ -281,7 +281,7 @@ class _SignUpViewState extends State<SignUpView> {
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
                           child: const Text(
-                            'Iniciá sesión',
+                            'Sign in',
                             style: TextStyle(
                               color: AppColors.purple500,
                               fontSize: 14,

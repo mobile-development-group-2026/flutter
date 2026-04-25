@@ -530,7 +530,7 @@ class _PropertyDetailViewState extends State<_PropertyDetailView> {
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Contacto próximamente disponible'),
+                    content: Text('Contact information coming soon'),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );

@@ -66,7 +66,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                               color: AppColors.neutral500, size: 40),
                           const SizedBox(height: 12),
                           Text(
-                            'No se pudieron cargar los listings',
+                            'The listings could not be loaded',
                             style: TextStyle(
                               fontFamily: 'Sora',
                               fontSize: 14,
@@ -77,7 +77,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                           TextButton(
                             onPressed: () => _cargarListings(),
                             child: Text(
-                              'Reintentar',
+                              'Retry',
                               style: TextStyle(
                                 fontFamily: 'Sora',
                                 color: AppColors.purple500,
@@ -692,7 +692,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   Icon(LucideIcons.searchX, size: 48, color: AppColors.neutral400),
                   const SizedBox(height: 16),
                   Text(
-                    'No hay listings disponibles',
+                    'There are no listings available',
                     style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
@@ -702,7 +702,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Vuelve más tarde (o arrastrá para recargar)',
+                    'Come back later (or pull to refresh)',
                     style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 13,

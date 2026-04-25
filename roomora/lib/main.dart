@@ -189,7 +189,7 @@ class _RetryView extends StatelessWidget {
               size: 40, color: AppColors.neutral600),
           const SizedBox(height: 16),
           const Text(
-            'No pudimos conectarnos',
+            'We couldn´t connect',
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
@@ -199,7 +199,7 @@ class _RetryView extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            'El servidor puede estar iniciando.\nTocá para reintentar.',
+            'The server might be starting up.\nTap to retry.',
             style: TextStyle(
                 color: AppColors.neutral700,
                 fontSize: 14,
@@ -208,7 +208,7 @@ class _RetryView extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          _GradientButton(text: 'Reintentar', onPressed: onRetry, fullWidth: false),
+          _GradientButton(text: 'Retry', onPressed: onRetry, fullWidth: false),
         ],
       ),
     );

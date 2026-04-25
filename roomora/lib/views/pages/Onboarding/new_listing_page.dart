@@ -17,27 +17,27 @@ class NewListingView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Nuevo', style: h1Black),
+              const Text('New', style: h1Black),
               const Text('listing', style: h1Purple),
               const SizedBox(height: 4),
               const Text(
-                  'Completá los detalles. Podés editar antes de publicar.',
+                  'Complete the details. You can edit before publishing.',
                   style: TextStyle(fontSize: 14, color: AppColors.neutral700, fontFamily: 'Sora')),
               const SizedBox(height: 20),
-              OnboardingField(label: 'TÍTULO', hint: 'Studio cómodo cerca de la catedral',
+              OnboardingField(label: 'TITLE', hint: 'Comfortable studio near the cathedral',
                   icon: Icons.title, onChanged: (v) { vm.title = v; vm.notifyListeners(); }),
               const SizedBox(height: 16),
               Row(children: [
-                Expanded(child: OnboardingField(label: 'RENTA MENSUAL', hint: '700',
+                Expanded(child: OnboardingField(label: 'MONTHLY RENT', hint: '700',
                     icon: Icons.attach_money,
                     onChanged: (v) { vm.monthlyRent = v; vm.notifyListeners(); })),
                 const SizedBox(width: 12),
-                Expanded(child: OnboardingField(label: 'DEPÓSITO', hint: '700',
+                Expanded(child: OnboardingField(label: 'SECURITY DEPOSIT', hint: '700',
                     icon: Icons.attach_money,
                     onChanged: (v) { vm.securityDeposit = v; vm.notifyListeners(); })),
               ]),
               const SizedBox(height: 16),
-              const Text('TIPO DE PROPIEDAD', style: sectionLabel),
+              const Text('PROPERTY TYPE', style: sectionLabel),
               const SizedBox(height: 8),
               Wrap(spacing: 8, runSpacing: 8,
                 children: NewListingViewModel.propertyTypes.map((type) {
@@ -48,7 +48,7 @@ class NewListingView extends StatelessWidget {
               const SizedBox(height: 16),
               Row(children: [
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('CONTRATO', style: sectionLabel),
+                  const Text('CONTRACT', style: sectionLabel),
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -69,7 +69,7 @@ class NewListingView extends StatelessWidget {
                 ])),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('DISPONIBLE DESDE', style: sectionLabel),
+                  const Text('AVAILABLE FROM', style: sectionLabel),
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: () async {
@@ -97,14 +97,14 @@ class NewListingView extends StatelessWidget {
                 ])),
               ]),
               const SizedBox(height: 16),
-              const Text('AMENIDADES', style: sectionLabel),
+              const Text('AMENITIES', style: sectionLabel),
               const SizedBox(height: 8),
               Wrap(spacing: 8, runSpacing: 8,
                   children: NewListingViewModel.amenities.map((a) => CustomChip(
                         label: a, selected: vm.selectedAmenities.contains(a),
                         onTap: () => vm.toggleAmenity(a))).toList()),
               const SizedBox(height: 16),
-              const Text('REGLAS', style: sectionLabel),
+              const Text('RULES', style: sectionLabel),
               const SizedBox(height: 8),
               Wrap(spacing: 8, runSpacing: 8,
                   children: NewListingViewModel.rules.map((r) => CustomChip(
@@ -112,7 +112,7 @@ class NewListingView extends StatelessWidget {
                         onTap: () => vm.toggleRule(r))).toList()),
               const SizedBox(height: 16),
               Row(children: [
-                const Text('DESCRIPCIÓN', style: sectionLabel),
+                const Text('DESCRIPTION', style: sectionLabel),
                 const Spacer(),
                 Text('${vm.description.length} / ${NewListingViewModel.descriptionMinChars} min',
                     style: TextStyle(fontSize: 11, fontFamily: 'Sora',
@@ -122,7 +122,7 @@ class NewListingView extends StatelessWidget {
               const SizedBox(height: 6),
               OnboardingField(
                 label: '', maxLines: 4,
-                hint: 'Describí tu propiedad — el barrio, qué la hace genial...',
+                hint: 'Describe your property — the neighborhood, what makes it great...',
                 onChanged: (v) { vm.description = v; vm.notifyListeners(); }),
             ],
           ),

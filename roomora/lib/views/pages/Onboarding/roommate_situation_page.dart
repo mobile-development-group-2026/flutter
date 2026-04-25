@@ -17,11 +17,11 @@ class RoommateSituationView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('¿Cuál es tu', style: h1Black),
-              const Text('situación?', style: h1Purple),
+              const Text('What is your', style: h1Black),
+              const Text('situation?', style: h1Purple),
               const SizedBox(height: 4),
               const Text(
-                'Elegí la que mejor describe dónde estás ahora.',
+                'Choose the option that best describes where you are now.',
                 style: TextStyle(
                     fontSize: 14,
                     color: AppColors.neutral700,
@@ -121,7 +121,7 @@ class RoommateSituationView extends StatelessWidget {
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Podés cambiar esto en cualquier momento desde tu perfil.',
+                      'You can change this at any time from your profile.',
                       style: TextStyle(
                           fontSize: 13,
                           color: AppColors.neutral600,

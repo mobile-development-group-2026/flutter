@@ -152,9 +152,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                     : CustomButton(
                         text: _vm.isLastStep
                             ? (_vm.isLoading
-                                ? 'Finalizando...'
-                                : 'Completar setup')
-                            : 'Continuar  →',
+                                ? 'In closing...'
+                                : 'Complete setup')
+                            : 'Continue  →',
                         onPressed: _vm.canContinue
                             ? () async {
                                 if (_vm.isLastStep) {
