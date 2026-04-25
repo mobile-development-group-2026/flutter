@@ -175,19 +175,6 @@ class ProfileViewModel extends ChangeNotifier {
     return _checkForSqlInjection(value, 'Name');
   }
 
-  String? _validateEmail(String value) {
-    if (value.isEmpty) {
-      return 'Email is required';
-    }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Enter a valid email (e.g., name@example.com)';
-    }
-    if (value.length > 100) {
-      return 'Email cannot exceed 100 characters';
-    }
-    return _checkForSqlInjection(value, 'Email');
-  }
 
   String? _validatePhone(String value) {
     if (value.isEmpty) {
@@ -232,9 +219,6 @@ class ProfileViewModel extends ChangeNotifier {
       case 'name':
         error = _validateName(value);
         break;
-      case 'email':
-        error = _validateEmail(value);
-        break;
       case 'phone':
         error = _validatePhone(value);
         break;
@@ -263,9 +247,6 @@ class ProfileViewModel extends ChangeNotifier {
     
     final nameError = _validateName(nameController.text);
     if (nameError != null) errors['name'] = nameError;
-    
-    final emailError = _validateEmail(emailController.text);
-    if (emailError != null) errors['email'] = emailError;
     
     final phoneError = _validatePhone(phoneController.text);
     if (phoneError != null) errors['phone'] = phoneError;
