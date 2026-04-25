@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "417034429036",
+    "project_id": "roomora-app-8c7c7",
+    "storage_bucket": "roomora-app-8c7c7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417034429036:android:b31651c9d4d1a898c22e49",
+        "android_client_info": {
+          "package_name": "com.example.roomora"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBltcNRID6cQN7WMI-zy4JwkWWtQfnlVSg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
