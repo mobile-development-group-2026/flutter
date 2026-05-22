@@ -463,7 +463,7 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFF6F7F8), // 👈 Fondo gris claro
+            color: const Color(0xFFF6F7F8),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFE4E7EC)),
           ),
@@ -565,24 +565,21 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
           return;
         }
 
-        print('Continue button held down');
         final auth = ClerkAuth.of(context, listen: false);
         final tokenObj = await auth.sessionToken();
         final token = tokenObj?.jwt;
 
         if (token != null) {
           final profile = await viewModel.submitProfile(token);
-          if (!context.mounted) return;
+          if (!mounted) return;
 
           if (profile != null) {
-            print('Profile created, loading...');
             _navigateToListingPage(profile.id.toString());
           } else if (viewModel.errorMessage != null) {
-            print('Error: ${viewModel.errorMessage}');
             _showErrorSnackBar(viewModel.errorMessage!);
           }
         } else {
-          if (context.mounted) {
+          if (mounted) {
             _showErrorSnackBar('Session error. Please log in again.');
           }
         }

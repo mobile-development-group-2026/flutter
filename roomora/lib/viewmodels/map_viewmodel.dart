@@ -71,7 +71,7 @@ class MapViewModel extends ChangeNotifier {
       _allListings = listings;
       _applyDistanceFilter();
     } catch (e) {
-      _errorMessage = 'Error cargando listings: $e';
+      _errorMessage = 'Error loading listings: $e';
       notifyListeners();
     }
   }

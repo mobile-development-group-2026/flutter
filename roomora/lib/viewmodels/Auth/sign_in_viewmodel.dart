@@ -40,11 +40,11 @@ class SignInViewModel extends ChangeNotifier {
   String _friendlyError(Object e) {
     final msg = e.toString().toLowerCase();
     if (msg.contains('password') || msg.contains('identifier')) {
-      return 'Email o contraseña incorrectos.';
+      return 'Invalid email or password.';
     }
     if (msg.contains('network') || msg.contains('socket')) {
-      return 'Sin conexión. Revisá tu internet.';
+      return 'No internet connection. Please check your network.';
     }
-    return 'Algo salió mal. Intentá de nuevo.';
+    return 'Something went wrong. Please try again.';
   }
 }

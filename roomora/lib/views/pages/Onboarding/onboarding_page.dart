@@ -13,7 +13,6 @@ import 'new_listing_page.dart';
 import 'onboarding_complete_page.dart';
 import '../discover_page.dart';
 
-
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
 
@@ -56,7 +55,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         onContinue: () {
           _vm.finishOnboarding(session);
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const DiscoverPage()), 
+            MaterialPageRoute(builder: (_) => const DiscoverPage()),
           );
         },
       );
@@ -140,8 +139,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                 ),
               ),
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: AnimatedOpacity(
                 opacity: _vm.canContinue ? 1.0 : 0.4,
                 duration: const Duration(milliseconds: 200),

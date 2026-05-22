@@ -32,8 +32,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt;
 
-    print('Token: $token');
-
     if (token != null && mounted) {
       context.read<ListingViewModel>().loadLandlordListings(token);
     }
@@ -201,7 +199,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
         itemBuilder: (context, index) {
           if (index == 0) return _buildSectionHeader(listings.length);
           final listing = listings[index - 1];
-          return _buildCompactCard(listing); 
+          return _buildCompactCard(listing);
         },
       ),
     );
@@ -264,288 +262,288 @@ class _DiscoverPageState extends State<DiscoverPage> {
         ),
       ),
       child: Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  color: AppColors.purple100,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: Center(
-                  child: Icon(LucideIcons.house,
-                      size: 48, color: AppColors.purple300),
-                ),
-              ),
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 5),
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 200,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(100),
+                    color: AppColors.purple100,
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(20)),
                   ),
-                  child: Row(
+                  child: Center(
+                    child: Icon(LucideIcons.house,
+                        size: 48, color: AppColors.purple300),
+                  ),
+                ),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: AppColors.green500,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Verified landlord',
+                          style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.neutral800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '\$${listing.rent.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.neutral900,
+                          ),
+                        ),
+                        Text(
+                          '/ month',
+                          style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 10,
+                            color: AppColors.neutral600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.yellow500.withValues(alpha: 0.95),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.bolt, size: 14, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          'Flash sale — 15% off first month',
+                          style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: AppColors.green500,
-                          shape: BoxShape.circle,
+                      Expanded(
+                        child: Text(
+                          listing.title,
+                          style: const TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Verified landlord',
-                        style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.neutral800,
-                        ),
-                      ),
+                      Icon(LucideIcons.heart,
+                          size: 20, color: AppColors.neutral400),
                     ],
                   ),
-                ),
-              ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  const SizedBox(height: 6),
+                  Row(
                     children: [
+                      Icon(LucideIcons.mapPin,
+                          size: 13, color: AppColors.neutral500),
+                      const SizedBox(width: 4),
                       Text(
-                        '\$${listing.rent.toStringAsFixed(0)}',
+                        '${listing.city}, ${listing.state}',
                         style: TextStyle(
                           fontFamily: 'Sora',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.neutral900,
+                          fontSize: 12,
+                          color: AppColors.neutral600,
                         ),
                       ),
                       Text(
-                        '/ month',
+                        ' · ${listing.propertyType}',
                         style: TextStyle(
                           fontFamily: 'Sora',
-                          fontSize: 10,
+                          fontSize: 12,
                           color: AppColors.neutral600,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.yellow500.withValues(alpha: 0.95),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _buildAmenityChips(listing),
                   ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.bolt, size: 14, color: Colors.white),
-                      SizedBox(width: 4),
-                      Text(
-                        'Flash sale — 15% off first month',
-                        style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        listing.title,
-                        style: const TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
-                        ),
-                      ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.purple100,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    Icon(LucideIcons.heart,
-                        size: 20, color: AppColors.neutral400),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Icon(LucideIcons.mapPin,
-                        size: 13, color: AppColors.neutral500),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${listing.city}, ${listing.state}',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 12,
-                        color: AppColors.neutral600,
-                      ),
-                    ),
-                    Text(
-                      ' · ${listing.propertyType}',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 12,
-                        color: AppColors.neutral600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: _buildAmenityChips(listing),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.purple100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Compatibility',
-                        style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.purple700,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: LinearProgressIndicator(
-                            value: 0.87,
-                            backgroundColor: AppColors.purple200,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.purple500),
-                            minHeight: 6,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '87%',
-                        style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.purple500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppColors.neutral400),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: Text(
-                          'Schedule visit',
+                    child: Row(
+                      children: [
+                        Text(
+                          'Compatibility',
                           style: TextStyle(
                             fontFamily: 'Sora',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.neutral800,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.purple500,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text(
-                          'Apply now →',
-                          style: TextStyle(
-                            fontFamily: 'Sora',
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
+                            color: AppColors.purple700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: LinearProgressIndicator(
+                              value: 0.87,
+                              backgroundColor: AppColors.purple200,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.purple500),
+                              minHeight: 6,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '87%',
+                          style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.purple500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: AppColors.neutral400),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: Text(
+                            'Schedule visit',
+                            style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.neutral800,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.purple500,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text(
+                            'Apply now →',
+                            style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),   
-    );   
+    );
   }
 
   Widget _buildCompactCard(Listing listing) {
@@ -557,92 +555,92 @@ class _DiscoverPageState extends State<DiscoverPage> {
         ),
       ),
       child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.purple100,
-              borderRadius: BorderRadius.circular(12),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(LucideIcons.house,
-                size: 28, color: AppColors.purple300),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '\$${listing.rent.toStringAsFixed(0)}/mo',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.neutral900,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.purple100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(LucideIcons.house,
+                  size: 28, color: AppColors.purple300),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '\$${listing.rent.toStringAsFixed(0)}/mo',
+                        style: TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.neutral900,
+                        ),
                       ),
-                    ),
-                    Icon(LucideIcons.heart,
-                        size: 16, color: AppColors.neutral400),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  listing.title,
-                  style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.neutral800,
+                      Icon(LucideIcons.heart,
+                          size: 16, color: AppColors.neutral400),
+                    ],
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(LucideIcons.mapPin,
-                        size: 11, color: AppColors.neutral500),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${listing.city} · ${listing.leaseTermMonths} months',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 11,
-                        color: AppColors.neutral600,
-                      ),
+                  const SizedBox(height: 2),
+                  Text(
+                    listing.title,
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.neutral800,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 4,
-                  children: _buildAmenityChips(listing, small: true),
-                ),
-              ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(LucideIcons.mapPin,
+                          size: 11, color: AppColors.neutral500),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${listing.city} · ${listing.leaseTermMonths} months',
+                        style: TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 11,
+                          color: AppColors.neutral600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 4,
+                    children: _buildAmenityChips(listing, small: true),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    )   // 
-    );   // cierra GestureDetector
+    );
   }
 
   List<Widget> _buildAmenityChips(Listing listing, {bool small = false}) {
@@ -754,13 +752,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
             icon: LucideIcons.user,
             label: 'Profile',
             onTap: () async {
-              // 1. Cerramos sesión en Clerk
               await ClerkAuth.of(context, listen: false).signOut();
-              
-              // 2. Usamos el 'mounted' del Estado en lugar de context.mounted
               if (!mounted) return;
-              
-              // 3. Limpiamos tu estado local
               context.read<UserSession>().clear();
             },
           ),

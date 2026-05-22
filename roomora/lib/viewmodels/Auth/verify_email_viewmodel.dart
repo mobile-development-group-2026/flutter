@@ -9,7 +9,7 @@ class VerifyEmailViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
-  String get buttonTitle => isLoading ? 'Verificando...' : 'Verificar email';
+  String get buttonTitle => isLoading ? 'Verifying...' : 'Verify Email';
 
   Future<bool> verify({
     required ClerkAuthState auth,
@@ -42,7 +42,7 @@ class VerifyEmailViewModel extends ChangeNotifier {
       await Future.delayed(const Duration(seconds: 1));
 
       final token = await session.getTokenFromAuth(auth);
-      if (token == null) throw Exception('No se pudo obtener el token de sesión');
+      if (token == null) throw Exception('Failed to get session token');
 
       final profile = await ApiService().syncUser(
         token: token,
@@ -69,12 +69,12 @@ class VerifyEmailViewModel extends ChangeNotifier {
   String _friendlyError(Object e) {
     final msg = e.toString().toLowerCase();
     if (msg.contains('code') || msg.contains('verification')) {
-      return 'Código incorrecto. Revisá el email y volvé a intentar.';
+      return 'Invalid verification code. Please check your email and try again.';
     }
-    if (msg.contains('expired')) return 'El código expiró. Solicitá uno nuevo.';
+    if (msg.contains('expired')) return 'The verification code has expired. Please request a new one.';
     if (msg.contains('network') || msg.contains('socket')) {
-      return 'Sin conexión. Revisá tu internet.';
+      return 'No internet connection. Please check your network.';
     }
-    return 'Algo salió mal. Intentá de nuevo.';
+    return 'Something went wrong. Please try again.';
   }
 }

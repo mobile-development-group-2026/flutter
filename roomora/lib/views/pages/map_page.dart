@@ -19,7 +19,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final MapController _mapController = MapController();
 
- @override
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -33,11 +33,10 @@ class _MapPageState extends State<MapPage> {
     final token = tokenObj?.jwt;
 
     if (token != null && mounted) {
-      context.read<MapViewModel>().initialize(token); 
-    } else {
-      print('The map token could not be obtained');
+      context.read<MapViewModel>().initialize(token);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

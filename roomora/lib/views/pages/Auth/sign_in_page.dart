@@ -25,7 +25,8 @@ class _SignInViewState extends State<SignInView> {
     _passCtrl.dispose();
     super.dispose();
   }
-@override
+
+  @override
   Widget build(BuildContext context) {
     final auth = ClerkAuth.of(context);
     final session = context.read<UserSession>();
@@ -38,18 +39,18 @@ class _SignInViewState extends State<SignInView> {
           children: [
             Container(
               decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
               ),
-            ),
-            padding: EdgeInsets.only(
-              left: 24,
-              right: 24,
-              top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-            ),
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 12,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +224,7 @@ class _SignInViewState extends State<SignInView> {
                           text: _vm.buttonTitle,
                           onPressed: () async {
                             final ok = await _vm.signIn(auth, session);
-                            if (ok && context.mounted) {
+                            if (ok && mounted) {
                               Navigator.of(context).pop();
                             }
                           },
@@ -265,6 +266,7 @@ class _SignInViewState extends State<SignInView> {
     );
   }
 }
+
 class _AvatarBubble extends StatelessWidget {
   final String label;
   final double left;

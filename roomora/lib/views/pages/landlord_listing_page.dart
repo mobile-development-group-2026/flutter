@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:roomora/views/pages/Onboarding/onboarding_complete_page.dart';
-import 'package:roomora/views/pages/discover_page.dart';
 import '../../viewmodels/listing_viewmodel.dart';
 import '../../services/api_service.dart';
 import '../../services/listing_storage_service.dart';
@@ -10,7 +8,7 @@ import '../widgets/photo_upload_widget.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/progress_indicator.dart';
 import 'package:clerk_flutter/clerk_flutter.dart';
-import '../pages/Onboarding/onboarding_complete_page.dart';
+import 'package:roomora/views/pages/discover_page.dart';
 
 class LandlordListingPage extends StatefulWidget {
   final String landlordId;
@@ -25,7 +23,6 @@ class LandlordListingPage extends StatefulWidget {
 }
 
 class _LandlordListingPageState extends State<LandlordListingPage> {
-
   @override
   void initState() {
     super.initState();
@@ -65,7 +62,7 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
   }
 
   Future<void> _onPublishPressed() async {
-    final viewModel = context.read<ListingViewModel>(); 
+    final viewModel = context.read<ListingViewModel>();
     
     if (!viewModel.validateForm()) {
       viewModel.showValidationAlert(context);
@@ -74,6 +71,13 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
     final auth = ClerkAuth.of(context, listen: false);
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt ?? '';
+    
+    if (token.isEmpty) {
+      if (mounted) {
+        _showErrorDialog(context, 'Authentication error. Please log in again.');
+      }
+      return;
+    }
     
     viewModel.submitListing(token).then((_) {
       if (mounted) {
@@ -900,50 +904,6 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
     );
   }
 
- Widget _buildActionButtons(BuildContext context, ListingViewModel viewModel) {
-    return Column(
-      children: [
-        CustomButton(
-          text: 'Publish Listing',
-          onPressed: () async {
-            final auth = ClerkAuth.of(context, listen: false);
-            final tokenObj = await auth.sessionToken();
-            final token = tokenObj?.jwt;
-
-            if (token != null) {
-              final listing = await viewModel.submitListing(token);
-              if (!context.mounted) return;
-
-              if (listing != null) {
-                _showSuccessDialog(context);
-              } else if (viewModel.errorMessage != null) {
-                _showErrorDialog(context, viewModel.errorMessage!);
-              }
-            } else {
-              if (context.mounted) {
-                _showErrorDialog(context, "Authentication error. Please log in again.");
-              }
-            }
-          },
-          isPrimary: true,
-        ),
-        const SizedBox(height: 12),
-        CustomButton(
-          text: 'Save as Draft',
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Draft saved'),
-                backgroundColor: Color(0xFF7B5BF2),
-              ),
-            );
-          },
-          isPrimary: false,
-        ),
-      ],
-    );
-  }
-
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -956,25 +916,10 @@ class _LandlordListingPageState extends State<LandlordListingPage> {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              
               if (mounted) {
-                final user = ClerkAuth.of(context, listen: false).user;
-                final landlordName = user?.firstName ?? 'Landlord';
-                Navigator.pushAndRemoveUntil(
+                Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => OnboardingCompleteView(
-                      firstName: landlordName,
-                      role: 'landlord', 
-                      onContinue: () {
-                        Navigator.pushReplacement(
-                          context, 
-                          MaterialPageRoute(builder: (_) => const DiscoverPage())
-                        );
-                      },
-                    ), 
-                  ),
-                  (route) => false, 
+                  MaterialPageRoute(builder: (_) => const DiscoverPage()),
                 );
               }
             },

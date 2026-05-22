@@ -10,7 +10,7 @@ class SavedListing {
   final DateTime? visitedAt;
   final double distance;
 
-  SavedListing({
+  const SavedListing({
     required this.id,
     required this.listingId,
     required this.title,
@@ -25,16 +25,20 @@ class SavedListing {
 
   factory SavedListing.fromJson(Map<String, dynamic> json) {
     return SavedListing(
-      id: json['id'] ?? '',
-      listingId: json['listing_id'] ?? '',
-      title: json['title'] ?? '',
-      address: json['address'] ?? '',
-      latitude: (json['latitude'] ?? 0).toDouble(),
-      longitude: (json['longitude'] ?? 0).toDouble(),
-      visited: json['visited'] ?? false,
-      savedAt: DateTime.parse(json['saved_at'] ?? DateTime.now().toIso8601String()),
-      visitedAt: json['visited_at'] != null ? DateTime.parse(json['visited_at']) : null,
-      distance: (json['distance'] ?? 100).toDouble(),
+      id: json['id'] as String? ?? '',
+      listingId: json['listing_id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      address: json['address'] as String? ?? '',
+      latitude: (json['latitude'] as num? ?? 0).toDouble(),
+      longitude: (json['longitude'] as num? ?? 0).toDouble(),
+      visited: json['visited'] as bool? ?? false,
+      savedAt: json['saved_at'] != null
+          ? DateTime.parse(json['saved_at'] as String)
+          : DateTime.now(),
+      visitedAt: json['visited_at'] != null
+          ? DateTime.parse(json['visited_at'] as String)
+          : null,
+      distance: (json['distance'] as num? ?? 100).toDouble(),
     );
   }
 
@@ -78,4 +82,34 @@ class SavedListing {
       distance: distance ?? this.distance,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is SavedListing &&
+        other.id == id &&
+        other.listingId == listingId &&
+        other.title == title &&
+        other.address == address &&
+        other.latitude == latitude &&
+        other.longitude == longitude &&
+        other.visited == visited &&
+        other.savedAt == savedAt &&
+        other.visitedAt == visitedAt &&
+        other.distance == distance;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    listingId,
+    title,
+    address,
+    latitude,
+    longitude,
+    visited,
+    savedAt,
+    visitedAt,
+    distance,
+  );
 }
