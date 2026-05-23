@@ -8,7 +8,7 @@ class LocationAlert {
   final double distance;
   final String address;
 
-  LocationAlert({
+  const LocationAlert({
     required this.id,
     required this.listingId,
     required this.listingTitle,
@@ -21,14 +21,16 @@ class LocationAlert {
 
   factory LocationAlert.fromJson(Map<String, dynamic> json) {
     return LocationAlert(
-      id: json['id'] ?? '',
-      listingId: json['listing_id'] ?? '',
-      listingTitle: json['listing_title'] ?? '',
-      message: json['message'] ?? '',
-      timestamp: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
-      read: json['read'] ?? false,
-      distance: (json['distance'] ?? 0).toDouble(),
-      address: json['address'] ?? '',
+      id: json['id'] as String? ?? '',
+      listingId: json['listing_id'] as String? ?? '',
+      listingTitle: json['listing_title'] as String? ?? '',
+      message: json['message'] as String? ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'] as String)
+          : DateTime.now(),
+      read: json['read'] as bool? ?? false,
+      distance: (json['distance'] as num? ?? 0).toDouble(),
+      address: json['address'] as String? ?? '',
     );
   }
 
@@ -45,6 +47,28 @@ class LocationAlert {
     };
   }
 
+  LocationAlert copyWith({
+    String? id,
+    String? listingId,
+    String? listingTitle,
+    String? message,
+    DateTime? timestamp,
+    bool? read,
+    double? distance,
+    String? address,
+  }) {
+    return LocationAlert(
+      id: id ?? this.id,
+      listingId: listingId ?? this.listingId,
+      listingTitle: listingTitle ?? this.listingTitle,
+      message: message ?? this.message,
+      timestamp: timestamp ?? this.timestamp,
+      read: read ?? this.read,
+      distance: distance ?? this.distance,
+      address: address ?? this.address,
+    );
+  }
+
   LocationAlert markAsRead() {
     return LocationAlert(
       id: id,
@@ -57,4 +81,30 @@ class LocationAlert {
       address: address,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is LocationAlert &&
+        other.id == id &&
+        other.listingId == listingId &&
+        other.listingTitle == listingTitle &&
+        other.message == message &&
+        other.timestamp == timestamp &&
+        other.read == read &&
+        other.distance == distance &&
+        other.address == address;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    listingId,
+    listingTitle,
+    message,
+    timestamp,
+    read,
+    distance,
+    address,
+  );
 }

@@ -56,7 +56,7 @@ class GPSViewModel extends ChangeNotifier {
 
   void startLocationMonitoring() {
     if (!_permissionsGranted) {
-      _errorMessage = 'Permisos de ubicación no concedidos';
+      _errorMessage = 'Location permissions not granted';
       notifyListeners();
       return;
     }
@@ -102,7 +102,7 @@ class GPSViewModel extends ChangeNotifier {
     if (alreadyAlerted) return;
 
     String distanceFormatted = LocationCalculator.formatDistance(distance);
-    String message = 'Estás a $distanceFormatted de "${listing.title}". ¿Quieres visitarlo?';
+    String message = 'You are $distanceFormatted from "${listing.title}". Would you like to visit?';
 
     LocationAlert alert = LocationAlert(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -118,7 +118,7 @@ class GPSViewModel extends ChangeNotifier {
     _alerts.insert(0, alert);
     
     await _notificationService.showLocationAlert(
-      title: 'Listing cercano',
+      title: 'Nearby Listing',
       body: message,
       payload: listing.listingId,
     );

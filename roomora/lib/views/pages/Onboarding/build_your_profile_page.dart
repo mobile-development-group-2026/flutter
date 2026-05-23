@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../theme/colors.dart';
 import '/../../viewmodels/Onboarding/onboarding_viewmodel.dart';
 import 'dart:io';
+
 class BuildYourProfileView extends StatelessWidget {
   final BuildYourProfileViewModel vm;
   final String role;
@@ -21,7 +22,6 @@ class BuildYourProfileView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               const Text('Build your', style: _h1Black),
               const Text('profile', style: _h1Purple),
               const SizedBox(height: 4),
@@ -34,7 +34,6 @@ class BuildYourProfileView extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Profile photo
               _PhotoPicker(vm: vm, isStudent: isStudent),
               const SizedBox(height: 20),
 

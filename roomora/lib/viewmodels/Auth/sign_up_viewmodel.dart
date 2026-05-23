@@ -15,8 +15,8 @@ class SignUpViewModel extends ChangeNotifier {
   String? errorMessage;
 
   String get buttonTitle {
-    if (isLoading) return 'Cargando...';
-    return role == 'landlord' ? 'Crear cuenta landlord' : 'Crear cuenta';
+    if (isLoading) return 'Loading...';
+    return role == 'landlord' ? 'Create Landlord Account' : 'Create Account';
   }
 
   void setRole(String r) {
@@ -26,17 +26,17 @@ class SignUpViewModel extends ChangeNotifier {
 
   Future<void> signUp(ClerkAuthState auth) async {
     if (!agreedToTerms) {
-      errorMessage = 'Aceptá los Términos y Condiciones para continuar.';
+      errorMessage = 'Please accept the Terms and Conditions to continue.';
       notifyListeners();
       return;
     }
     if (password.length < 8) {
-      errorMessage = 'La contraseña debe tener al menos 8 caracteres.';
+      errorMessage = 'Password must be at least 8 characters.';
       notifyListeners();
       return;
     }
     if (firstName.trim().isEmpty || lastName.trim().isEmpty) {
-      errorMessage = 'Completá tu nombre y apellido.';
+      errorMessage = 'Please enter your first and last name.';
       notifyListeners();
       return;
     }
@@ -67,12 +67,12 @@ class SignUpViewModel extends ChangeNotifier {
   String _friendlyError(Object e) {
     final msg = e.toString().toLowerCase();
     if (msg.contains('email') && msg.contains('exist')) {
-      return 'Este email ya está registrado.';
+      return 'This email is already registered.';
     }
-    if (msg.contains('password')) return 'La contraseña no cumple los requisitos.';
+    if (msg.contains('password')) return 'Password does not meet requirements.';
     if (msg.contains('network') || msg.contains('socket')) {
-      return 'Sin conexión. Revisá tu internet.';
+      return 'No internet connection. Please check your network.';
     }
-    return 'Algo salió mal. Intentá de nuevo.';
+    return 'Something went wrong. Please try again.';
   }
 }

@@ -165,7 +165,6 @@ class _PropertyDetailViewState extends State<_PropertyDetailView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Badge "Verified landlord"
           Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -199,7 +198,6 @@ class _PropertyDetailViewState extends State<_PropertyDetailView> {
           ),
           const SizedBox(height: 12),
 
-          // Título
           Text(
             listing.title,
             style: const TextStyle(
@@ -211,7 +209,6 @@ class _PropertyDetailViewState extends State<_PropertyDetailView> {
           ),
           const SizedBox(height: 6),
 
-          // Dirección
           Row(
             children: [
               const Icon(LucideIcons.mapPin,
@@ -231,7 +228,6 @@ class _PropertyDetailViewState extends State<_PropertyDetailView> {
           ),
           const SizedBox(height: 16),
 
-          // Precio principal
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -253,7 +249,6 @@ class _PropertyDetailViewState extends State<_PropertyDetailView> {
                 ),
               ),
               const Spacer(),
-              // Chips de habitaciones/baños
               _smallChip(
                   LucideIcons.bedDouble, '${listing.bedrooms} bed'),
               const SizedBox(width: 6),
@@ -410,7 +405,6 @@ class _PropertyDetailViewState extends State<_PropertyDetailView> {
           else if (vm.landlordProfile != null)
             Row(
               children: [
-                // Avatar
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: AppColors.purple100,

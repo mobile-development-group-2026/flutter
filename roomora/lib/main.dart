@@ -45,8 +45,6 @@ class RoomoraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserSession()),
       ],
       child: ClerkAuth(
-        //clerk Andy: pk_test_ZXZvbHZpbmctZ2VsZGluZy02MS5jbGVyay5hY2NvdW50cy5kZXYk
-        //clerk Esteban: pk_test_YnVyc3RpbmctaGFnZmlzaC05NC5jbGVyay5hY2NvdW50cy5kZXYk
         config: ClerkAuthConfig(publishableKey: 'pk_test_ZXZvbHZpbmctZ2VsZGluZy02MS5jbGVyay5hY2NvdW50cy5kZXYk'),
         child: MaterialApp(
           title: 'Roomora',
@@ -107,7 +105,6 @@ class _RootViewState extends State<RootView> {
           }
         });
       } else {
-        // Sign in detectado → cargar perfil
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!session.isLoaded) {
             _startLoad(auth, session);
@@ -116,7 +113,6 @@ class _RootViewState extends State<RootView> {
       }
     }
 
- 
     if (user == null) {
       return const LandingView();
     }
@@ -139,8 +135,8 @@ class _RootViewState extends State<RootView> {
                     const SizedBox(height: 16),
                     Text(
                       session.pendingSync != null
-                          ? 'Creando tu cuenta...'
-                          : 'Cargando tu cuenta...',
+                          ? 'Creating your account...'
+                          : 'Loading your account...',
                       style: const TextStyle(
                         color: AppColors.neutral700,
                         fontFamily: 'Sora',
@@ -153,9 +149,8 @@ class _RootViewState extends State<RootView> {
       );
     }
 
-
     if (!session.isOnboarded) {
-      return const OnboardingView(); 
+      return const OnboardingView();
     }
 
     return const DiscoverPage();
@@ -189,7 +184,7 @@ class _RetryView extends StatelessWidget {
               size: 40, color: AppColors.neutral600),
           const SizedBox(height: 16),
           const Text(
-            'We couldn´t connect',
+            'We couldn\'t connect',
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,

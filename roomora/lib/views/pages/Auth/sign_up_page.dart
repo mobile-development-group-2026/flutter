@@ -85,7 +85,6 @@ class _SignUpViewState extends State<SignUpView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
                   RichText(
                     text: const TextSpan(
                       style: TextStyle(
@@ -114,7 +113,6 @@ class _SignUpViewState extends State<SignUpView> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Role picker
                   Row(
                     children: [
                       _RoleChip(
@@ -132,7 +130,6 @@ class _SignUpViewState extends State<SignUpView> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Nombre y apellido
                   Row(
                     children: [
                       Expanded(
@@ -148,7 +145,7 @@ class _SignUpViewState extends State<SignUpView> {
                         child: _AuthField(
                           controller: _lastCtrl,
                           label: 'LAST NAME',
-                          hint: 'García',
+                          hint: 'Garcia',
                           onChanged: (v) => _vm.lastName = v,
                         ),
                       ),
@@ -197,7 +194,6 @@ class _SignUpViewState extends State<SignUpView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Terms
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -227,7 +223,6 @@ class _SignUpViewState extends State<SignUpView> {
                   ),
                   const SizedBox(height: 8),
 
-                  // Error
                   if (_vm.errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -255,7 +250,6 @@ class _SignUpViewState extends State<SignUpView> {
                     const SizedBox(height: 12),
                   ],
 
-                  // Botón
                   _vm.isLoading
                       ? const Center(
                           child: CircularProgressIndicator(
@@ -266,7 +260,6 @@ class _SignUpViewState extends State<SignUpView> {
                         ),
                   const SizedBox(height: 16),
 
-                  // Sign in link
                   Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
