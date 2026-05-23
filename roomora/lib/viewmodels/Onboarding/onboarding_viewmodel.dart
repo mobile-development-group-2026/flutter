@@ -4,6 +4,7 @@ import '/../models/user_session.dart';
 import '/../models/landlord_profile.dart';
 import '/../services/api_service.dart';
 
+
 class BuildYourProfileViewModel extends ChangeNotifier {
   String bio = '';
   String university = '';
@@ -47,25 +48,26 @@ class BuildYourProfileViewModel extends ChangeNotifier {
   bool get canContinue => selectedHobbies.isNotEmpty;
 }
 
+
 enum HousingSituation {
   havePlace,
   needPlace;
 
   String get title => switch (this) {
-        HousingSituation.havePlace => 'I have a place',
-        HousingSituation.needPlace => 'I need a place',
+        HousingSituation.havePlace => 'Ya tengo un lugar',
+        HousingSituation.needPlace => 'Necesito un lugar',
       };
 
   String get subtitle => switch (this) {
-        HousingSituation.havePlace => 'Looking for a roommate to share with',
-        HousingSituation.needPlace => 'Looking for a place to live',
+        HousingSituation.havePlace => 'Busco un roommate para compartir',
+        HousingSituation.needPlace => 'Busco donde vivir',
       };
 
   String get description => switch (this) {
         HousingSituation.havePlace =>
-          'My apartment is ready. I need to find the right person to share it with.',
+          'Mi depto está listo. Necesito encontrar a la persona correcta para compartirlo.',
         HousingSituation.needPlace =>
-          'Looking for a place near campus that fits my budget and lifestyle.',
+          'Busco un lugar cerca del campus que se adapte a mi presupuesto y estilo de vida.',
       };
 
   String get icon => switch (this) {
@@ -84,6 +86,7 @@ class RoommateSituationViewModel extends ChangeNotifier {
 
   bool get canContinue => situation != null;
 }
+
 
 class RoommatePreferencesViewModel extends ChangeNotifier {
   int spotsAvailable = 1;
@@ -110,6 +113,7 @@ class RoommatePreferencesViewModel extends ChangeNotifier {
   void setCleanliness(int? v) { cleanliness = v; notifyListeners(); }
 }
 
+
 class ListingPreferencesViewModel extends ChangeNotifier {
   int? maxBudget = 850;
   String? propertyType;
@@ -123,17 +127,17 @@ class ListingPreferencesViewModel extends ChangeNotifier {
   static const List<int> leaseOptions = [3, 6, 12];
 
   static const List<Map<String, String>> propertyTypes = [
-    {'emoji': '🛋', 'label': 'Studio', 'sub': 'Private and compact space'},
-    {'emoji': '🚪', 'label': '1 Bedroom', 'sub': 'Separate bedroom and living room'},
-    {'emoji': '🏠', 'label': 'Shared room', 'sub': 'Share costs with roommates'},
-    {'emoji': '🏢', 'label': 'Any', 'sub': 'Show everything'},
+    {'emoji': '🛋', 'label': 'Studio', 'sub': 'Espacio privado y compacto'},
+    {'emoji': '🚪', 'label': '1 Bedroom', 'sub': 'Dormitorio y sala separados'},
+    {'emoji': '🏠', 'label': 'Shared room', 'sub': 'Compartir costo con roommates'},
+    {'emoji': '🏢', 'label': 'Any', 'sub': 'Mostrar todo'},
   ];
 
   static const List<Map<String, dynamic>> distanceOptions = [
     {'label': '≤ 500m', 'value': 0},
     {'label': '≤ 1 km', 'value': 1},
     {'label': '≤ 2 km', 'value': 2},
-    {'label': 'Any', 'value': 3},
+    {'label': 'Cualquier', 'value': 3},
   ];
 
   static const List<Map<String, String>> amenities = [
@@ -143,9 +147,9 @@ class ListingPreferencesViewModel extends ChangeNotifier {
   ];
 
   static const List<Map<String, String>> preferences = [
-    {'emoji': '🚭', 'label': 'Smoke-free', 'sub': 'Non-smoking units only'},
-    {'emoji': '🎓', 'label': 'Students only', 'sub': 'Verified students as tenants'},
-    {'emoji': '📸', 'label': 'Photos required', 'sub': 'Only listings with photos'},
+    {'emoji': '🚭', 'label': 'Smoke-free', 'sub': 'Solo unidades sin fumadores'},
+    {'emoji': '🎓', 'label': 'Students only', 'sub': 'Estudiantes verificados como inquilinos'},
+    {'emoji': '📸', 'label': 'Photos required', 'sub': 'Solo listings con fotos'},
   ];
 
   void setMaxBudget(int v) { maxBudget = v; notifyListeners(); }
@@ -162,6 +166,7 @@ class ListingPreferencesViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
+
 
 class NewListingViewModel extends ChangeNotifier {
   String title = '';
@@ -238,6 +243,18 @@ class OnboardingViewModel extends ChangeNotifier {
     if (step > 0) { step--; notifyListeners(); }
   }
 
+  bool _isUserNotFoundError(Object e) {
+    final msg = e.toString();
+    return msg.contains('401') || msg.contains('User not found') || msg.contains('sync first');
+  }
+
+  Future<void> _handleSaveError(Object e, ClerkAuthState auth) async {
+    errorMessage = e.toString();
+    if (_isUserNotFoundError(e)) {
+      await auth.signOut();
+    }
+  }
+
   Future<void> nextStep(ClerkAuthState auth) async {
     isLoading = true;
     errorMessage = null;
@@ -246,7 +263,7 @@ class OnboardingViewModel extends ChangeNotifier {
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt;
     if (token == null) {
-      errorMessage = 'Failed to get session token';
+      errorMessage = 'No se pudo obtener el token de sesión';
       isLoading = false;
       notifyListeners();
       return;
@@ -254,9 +271,9 @@ class OnboardingViewModel extends ChangeNotifier {
 
     if (step == 0) {
       if (isLandlord) {
-        await _saveLandlordProfile(token);
+        await _saveLandlordProfile(token, auth);
       } else {
-        await _saveStudentProfile(token);
+        await _saveStudentProfile(token, auth);
       }
     }
 
@@ -276,18 +293,18 @@ class OnboardingViewModel extends ChangeNotifier {
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt;
     if (token == null) {
-      errorMessage = 'Failed to get session token';
+      errorMessage = 'No se pudo obtener el token de sesión';
       isLoading = false;
       notifyListeners();
       return;
     }
 
     if (isLandlord) {
-      await _saveNewListing(token);
+      await _saveNewListing(token, auth);
     } else if (needsPlace) {
-      await _saveListingProfile(token);
+      await _saveListingProfile(token, auth);
     } else {
-      await _saveLifestyleProfile(token);
+      await _saveLifestyleProfile(token, auth);
     }
 
     if (errorMessage != null) {
@@ -316,7 +333,8 @@ class OnboardingViewModel extends ChangeNotifier {
     if (completedProfile != null) session.setLoaded(completedProfile!);
   }
 
-  Future<void> _saveLandlordProfile(String token) async {
+
+  Future<void> _saveLandlordProfile(String token, ClerkAuthState auth) async {
     final bp = buildProfile;
     final fields = <String, dynamic>{};
     if (bp.birthYear != null) fields['birth_year'] = bp.birthYear;
@@ -326,14 +344,15 @@ class OnboardingViewModel extends ChangeNotifier {
     }
     if (fields.isEmpty) return;
     try {
-      await ApiService().patchProfile('/profile/landlord', 'landlord_profile', fields, token: token);
+      await ApiService().updateProfile(fields, token: token);
     } catch (e) {
       errorMessage = e.toString();
+      await _handleSaveError(e, auth);
       debugPrint('[Onboarding] saveLandlordProfile failed: $e');
     }
   }
 
-  Future<void> _saveStudentProfile(String token) async {
+  Future<void> _saveStudentProfile(String token, ClerkAuthState auth) async {
     final bp = buildProfile;
     final fields = <String, dynamic>{};
     if (bp.university.isNotEmpty) fields['university'] = bp.university;
@@ -346,14 +365,15 @@ class OnboardingViewModel extends ChangeNotifier {
     }
     if (fields.isEmpty) return;
     try {
-      await ApiService().patchProfile('/profile/student', 'student_profile', fields, token: token);
+      await ApiService().updateProfile(fields, token: token);
     } catch (e) {
       errorMessage = e.toString();
+      await _handleSaveError(e, auth);
       debugPrint('[Onboarding] saveStudentProfile failed: $e');
     }
   }
 
-  Future<void> _saveLifestyleProfile(String token) async {
+  Future<void> _saveLifestyleProfile(String token, ClerkAuthState auth) async {
     final pref = preferences;
     final fields = <String, dynamic>{
       'spots_available': pref.spotsAvailable,
@@ -367,14 +387,15 @@ class OnboardingViewModel extends ChangeNotifier {
         'requirements': _cleanTags(pref.selectedRequirements.toList()),
     };
     try {
-      await ApiService().patchProfile('/profile/lifestyle', 'lifestyle_profile', fields, token: token);
+      await ApiService().updateProfile(fields, token: token);
     } catch (e) {
       errorMessage = e.toString();
+      await _handleSaveError(e, auth);
       debugPrint('[Onboarding] saveLifestyleProfile failed: $e');
     }
   }
 
-  Future<void> _saveListingProfile(String token) async {
+  Future<void> _saveListingProfile(String token, ClerkAuthState auth) async {
     final lp = listingPrefs;
     final fields = <String, dynamic>{
       if (lp.maxBudget != null) 'max_budget': lp.maxBudget,
@@ -388,14 +409,15 @@ class OnboardingViewModel extends ChangeNotifier {
         'preferences': lp.selectedPreferences.toList()..sort(),
     };
     try {
-      await ApiService().patchProfile('/profile/listing_preferences', 'listing_profile', fields, token: token);
+      await ApiService().updateProfile(fields, token: token);
     } catch (e) {
       errorMessage = e.toString();
+      await _handleSaveError(e, auth);
       debugPrint('[Onboarding] saveListingProfile failed: $e');
     }
   }
 
-  Future<void> _saveNewListing(String token) async {
+  Future<void> _saveNewListing(String token, ClerkAuthState auth) async {
     final nl = newListing;
     final fields = <String, dynamic>{
       'listing_type': 'property',
@@ -418,10 +440,11 @@ class OnboardingViewModel extends ChangeNotifier {
     try {
       await ApiService().createListingRaw(fields, token: token);
     } catch (e) {
-      errorMessage = e.toString();
+      await _handleSaveError(e, auth);
       debugPrint('[Onboarding] saveNewListing failed: $e');
     }
   }
+
 
   List<String> _cleanHobbies(List<String> items) => items
       .map((h) => h.replaceAll(RegExp(r'^[^\w\s]+\s*'), '').trim())
