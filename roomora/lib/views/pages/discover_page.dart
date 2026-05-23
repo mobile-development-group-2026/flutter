@@ -271,8 +271,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
                             color: starred ? AppColors.yellow500 : AppColors.neutral400,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -587,8 +587,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
