@@ -24,16 +24,22 @@ class _LandlordProfilePageState extends State<LandlordProfilePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = Provider.of<ProfileViewModel>(context, listen: false);
       viewModel.loadCachedProfile();
-      final user = ClerkAuth.of(context, listen: false).user;
-      final emails = user?.emailAddresses;
-      if (emails != null && emails.isNotEmpty) {
-        final primaryEmailObj = emails.firstWhere(
-          (email) => email.id == user!.primaryEmailAddressId,
-          orElse: () => emails.first,
-        );
-        viewModel.emailController.text = primaryEmailObj.emailAddress;
-      }
+      _loadUserEmail(viewModel);
     });
+  }
+
+  Future<void> _loadUserEmail(ProfileViewModel viewModel) async {
+    final auth = ClerkAuth.of(context, listen: false);
+    final user = auth.user;
+    final emails = user?.emailAddresses;
+    if (emails != null && emails.isNotEmpty) {
+      final primaryEmailObj = emails.firstWhere(
+        (email) => email.id == user!.primaryEmailAddressId,
+        orElse: () => emails.first,
+      );
+      viewModel.emailController.text = primaryEmailObj.emailAddress;
+      viewModel.validateField('email', primaryEmailObj.emailAddress);
+    }
   }
 
   @override

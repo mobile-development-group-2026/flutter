@@ -429,15 +429,14 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   void clearForm() {
-    bioController.clear();
-    nameController.clear();
-    emailController.clear();
-    phoneController.clear();
-    _profilePhoto = null;
-    _selectedImage = null;
-    _fieldErrors.clear();
-    notifyListeners();
-  }
+  bioController.clear();
+  nameController.clear();
+  phoneController.clear();
+  _profilePhoto = null;
+  _selectedImage = null;
+  _fieldErrors.clear();
+  notifyListeners();
+}
 
   void loadProfileToForm(LandlordProfile profile) {
     bioController.text = profile.bio ?? '';
@@ -449,14 +448,18 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadCachedProfile() async {
-    final cached = await _storageService.getProfile();
-    if (cached != null) {
-      _currentProfile = cached;
-      loadProfileToForm(cached);
-      notifyListeners();
-    }
+Future<void> loadCachedProfile() async {
+  final cached = await _storageService.getProfile();
+  if (cached != null) {
+    _currentProfile = cached;
+    bioController.text = cached.bio ?? '';
+    nameController.text = cached.fullName;
+    phoneController.text = cached.phone ?? '';
+    _profilePhoto = cached.profilePhoto;
+    _fieldErrors.clear();
+    notifyListeners();
   }
+}
 
   Future<LandlordProfile?> submitProfile(String token) async {
     _currentToken = token;
