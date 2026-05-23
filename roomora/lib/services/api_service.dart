@@ -1,6 +1,7 @@
-  import 'dart:convert';
+import 'dart:convert';
   import 'package:http/http.dart' as http;
   import '../models/landlord_profile.dart';
+  import '../models/roommate_profile.dart';
   import 'models/api_listing.dart';
   import 'dart:io';
 
@@ -254,6 +255,26 @@
     }
   }
  
+  Future<List<RoommateProfile>> getRoommates({required String token}) async {
+    final uri = Uri.parse('$baseUrl/users').replace(
+      queryParameters: {'role': 'tenant', 'page': '1', 'per_page': '50'},
+    );
+    final response = await _client.get(uri, headers: _headers(token));
+
+    if (response.statusCode == 200) {
+      final body = json.decode(response.body) as Map<String, dynamic>;
+      final data = body['data'];
+      List rawList = [];
+      if (data is List) {
+        rawList = data;
+      } else if (data is Map && data.containsKey('users')) {
+        rawList = data['users'] as List;
+      }
+      return rawList.map((e) => RoommateProfile.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    throw Exception('getRoommates ${response.statusCode}: ${response.body}');
+  }
+
   Future<void> createListingRaw(
     Map<String, dynamic> fields, {
     required String token,
