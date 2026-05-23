@@ -1,8 +1,32 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../models/landlord_profile.dart';
-import 'models/api_listing.dart';
-import 'dart:io';
+  import 'package:http/http.dart' as http;
+  import '../models/landlord_profile.dart';
+  import '../models/roommate_profile.dart';
+  import 'models/api_listing.dart';
+  import 'dart:io';
+
+
+  class ApiService {
+    // static const String baseUrl = 'https://roomora-api-omhi.onrender.com/api/v1'; //Api Esteban
+    static const String baseUrl = 'https://roomora-api.onrender.com/api/v1'; //Api Andy
+    final http.Client _client = http.Client();
+
+    Map<String, String> _headers(String token) => {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        };
+
+    Map<String, String> _multipartHeaders(String token) => {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        };
+
+    Map<String, dynamic> _unwrap(Map<String, dynamic> body) {
+      final inner = body['data'];
+      if (inner == null) throw Exception('Missing "data" key in response');
+      return inner as Map<String, dynamic>;
+    }
 
 class ApiService {
   static const String baseUrl = 'https://roomora-api.onrender.com/api/v1';
@@ -252,6 +276,26 @@ class ApiService {
       final decoded = json.decode(response.body) as Map<String, dynamic>;
       throw Exception('patchProfile $path ${response.statusCode}: ${decoded['error']}');
     }
+  }
+ 
+  Future<List<RoommateProfile>> getRoommates({required String token}) async {
+    final uri = Uri.parse('$baseUrl/users').replace(
+      queryParameters: {'role': 'tenant', 'page': '1', 'per_page': '50'},
+    );
+    final response = await _client.get(uri, headers: _headers(token));
+
+    if (response.statusCode == 200) {
+      final body = json.decode(response.body) as Map<String, dynamic>;
+      final data = body['data'];
+      List rawList = [];
+      if (data is List) {
+        rawList = data;
+      } else if (data is Map && data.containsKey('users')) {
+        rawList = data['users'] as List;
+      }
+      return rawList.map((e) => RoommateProfile.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    throw Exception('getRoommates ${response.statusCode}: ${response.body}');
   }
 
   Future<void> createListingRaw(

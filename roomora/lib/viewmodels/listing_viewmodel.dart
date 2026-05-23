@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/listing.dart';
 import '../services/api_service.dart';
 import '../services/listing_storage_service.dart';
@@ -26,6 +28,7 @@ class ListingViewModel extends ChangeNotifier {
     _setupAutoSave();
     _setupConnectivityListener();
     _syncPendingTasksOnStart();
+    _loadStarredIds();
   }
 
   final _progressSubject = BehaviorSubject<String>();
@@ -42,13 +45,21 @@ class ListingViewModel extends ChangeNotifier {
 
   bool _isOnline = true;
   String? _currentToken;
-  bool get isOnline => _isOnline;
+  Set<String> _starredIds = {};
 
+  bool get isOnline => _isOnline;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Listing? get currentListing => _currentListing;
-  List<Listing> get landlordListings => _landlordListings;
   XFile? get selectedImage => _selectedImage;
+
+  List<Listing> get landlordListings {
+    final starred = _landlordListings.where((l) => _starredIds.contains(l.id.toString())).toList();
+    final rest = _landlordListings.where((l) => !_starredIds.contains(l.id.toString())).toList();
+    return [...starred, ...rest];
+  }
+
+  bool isStarred(String id) => _starredIds.contains(id);
 
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
@@ -886,6 +897,30 @@ class ListingViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  static const _starredListingsKey = 'listing_starred_ids';
+
+  Future<void> _loadStarredIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_starredListingsKey) ?? [];
+    _starredIds = raw.toSet();
+    notifyListeners();
+  }
+
+  Future<void> _persistStarredIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_starredListingsKey, _starredIds.toList());
+  }
+
+  Future<void> toggleStar(String id) async {
+    if (_starredIds.contains(id)) {
+      _starredIds.remove(id);
+    } else {
+      _starredIds.add(id);
+    }
+    notifyListeners();
+    await _persistStarredIds();
   }
 
   @override
