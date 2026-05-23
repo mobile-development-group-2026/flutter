@@ -36,7 +36,7 @@ class PropertyDetailViewModel extends ChangeNotifier {
       _listing = apiListing.toListing();
       _fetchLandlordProfile(token: token);
     } catch (e) {
-      _errorMessage = 'No se pudo cargar el listing: ${e.toString()}';
+      _errorMessage = 'Failed to load listing: ${e.toString()}';
     } finally {
       _isLoading = false;
       notifyListeners();

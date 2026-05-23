@@ -175,6 +175,19 @@ class ProfileViewModel extends ChangeNotifier {
     return _checkForSqlInjection(value, 'Name');
   }
 
+  String? _validateEmail(String value) {
+    if (value.isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Enter a valid email (e.g., name@example.com)';
+    }
+    if (value.length > 100) {
+      return 'Email cannot exceed 100 characters';
+    }
+    return _checkForSqlInjection(value, 'Email');
+  }
 
   String? _validatePhone(String value) {
     if (value.isEmpty) {
@@ -219,6 +232,9 @@ class ProfileViewModel extends ChangeNotifier {
       case 'name':
         error = _validateName(value);
         break;
+      case 'email':
+        error = _validateEmail(value);
+        break;
       case 'phone':
         error = _validatePhone(value);
         break;
@@ -247,6 +263,9 @@ class ProfileViewModel extends ChangeNotifier {
     
     final nameError = _validateName(nameController.text);
     if (nameError != null) errors['name'] = nameError;
+    
+    final emailError = _validateEmail(emailController.text);
+    if (emailError != null) errors['email'] = emailError;
     
     final phoneError = _validatePhone(phoneController.text);
     if (phoneError != null) errors['phone'] = phoneError;
@@ -410,15 +429,14 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   void clearForm() {
-    bioController.clear();
-    nameController.clear();
-    emailController.clear();
-    phoneController.clear();
-    _profilePhoto = null;
-    _selectedImage = null;
-    _fieldErrors.clear();
-    notifyListeners();
-  }
+  bioController.clear();
+  nameController.clear();
+  phoneController.clear();
+  _profilePhoto = null;
+  _selectedImage = null;
+  _fieldErrors.clear();
+  notifyListeners();
+}
 
   void loadProfileToForm(LandlordProfile profile) {
     bioController.text = profile.bio ?? '';
@@ -430,14 +448,18 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadCachedProfile() async {
-    final cached = await _storageService.getProfile();
-    if (cached != null) {
-      _currentProfile = cached;
-      loadProfileToForm(cached);
-      notifyListeners();
-    }
+Future<void> loadCachedProfile() async {
+  final cached = await _storageService.getProfile();
+  if (cached != null) {
+    _currentProfile = cached;
+    bioController.text = cached.bio ?? '';
+    nameController.text = cached.fullName;
+    phoneController.text = cached.phone ?? '';
+    _profilePhoto = cached.profilePhoto;
+    _fieldErrors.clear();
+    notifyListeners();
   }
+}
 
   Future<LandlordProfile?> submitProfile(String token) async {
     _currentToken = token;

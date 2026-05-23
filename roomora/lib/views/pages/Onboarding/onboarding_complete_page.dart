@@ -28,20 +28,50 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
 
   List<Map<String, dynamic>> get perks => isStudent
       ? [
-          {'icon': Icons.verified_user, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Verified badge on your profile', 'sub': 'Others know you are a real student'},
-          {'icon': Icons.home, 'color': ExtraAppColors.yellow500, 'bg': ExtraAppColors.yellow100,
-           'title': 'Access to exclusive listings', 'sub': 'Landlords that only rent to students'},
-          {'icon': Icons.people, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Roommate matching', 'sub': 'Find people who match your lifestyle'},
+          {
+            'icon': Icons.verified_user,
+            'color': AppColors.purple500,
+            'bg': AppColors.purple100,
+            'title': 'Verified badge on your profile',
+            'sub': 'Others know you are a real student'
+          },
+          {
+            'icon': Icons.home,
+            'color': ExtraAppColors.yellow500,
+            'bg': ExtraAppColors.yellow100,
+            'title': 'Access to exclusive listings',
+            'sub': 'Landlords that only rent to students'
+          },
+          {
+            'icon': Icons.people,
+            'color': AppColors.purple500,
+            'bg': AppColors.purple100,
+            'title': 'Roommate matching',
+            'sub': 'Find people who match your lifestyle'
+          },
         ]
       : [
-          {'icon': Icons.verified_user, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Verified landlord badge', 'sub': 'Verified students trust your listings'},
-          {'icon': Icons.list_alt, 'color': ExtraAppColors.yellow500, 'bg': ExtraAppColors.yellow100,
-           'title': 'Publish unlimited listings', 'sub': 'Reach verified students'},
-          {'icon': Icons.people, 'color': AppColors.purple500, 'bg': AppColors.purple100,
-           'title': 'Screening tools', 'sub': 'Find reliable tenants'},
+          {
+            'icon': Icons.verified_user,
+            'color': AppColors.purple500,
+            'bg': AppColors.purple100,
+            'title': 'Verified landlord badge',
+            'sub': 'Verified students trust your listings'
+          },
+          {
+            'icon': Icons.list_alt,
+            'color': ExtraAppColors.yellow500,
+            'bg': ExtraAppColors.yellow100,
+            'title': 'Publish unlimited listings',
+            'sub': 'Reach verified students'
+          },
+          {
+            'icon': Icons.people,
+            'color': AppColors.purple500,
+            'bg': AppColors.purple100,
+            'title': 'Screening tools',
+            'sub': 'Find reliable tenants'
+          },
         ];
 
   @override
@@ -78,45 +108,91 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
                   Stack(
                     alignment: Alignment.center,
                     children: [
-                      Container(width: 160, height: 160,
-                          decoration: BoxDecoration(shape: BoxShape.circle,
-                              color: ExtraAppColors.green100.withOpacity(0.3))),
-                      Container(width: 120, height: 120,
-                          decoration: BoxDecoration(shape: BoxShape.circle,
-                              color: ExtraAppColors.green100.withOpacity(0.5))),
-                      Container(width: 88, height: 88,
-                          decoration: const BoxDecoration(
-                              shape: BoxShape.circle, color: ExtraAppColors.green200),
-                          child: const Icon(Icons.check,
-                              color: Colors.white, size: 36)),
+                      Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ExtraAppColors.green100.withOpacity(0.3),
+                        ),
+                      ),
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ExtraAppColors.green100.withOpacity(0.5),
+                        ),
+                      ),
+                      Container(
+                        width: 88,
+                        height: 88,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ExtraAppColors.green200,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                      ),
                       Positioned(
-                        right: 36, bottom: 36,
+                        right: 36,
+                        bottom: 36,
                         child: Container(
-                          width: 32, height: 32,
+                          width: 32,
+                          height: 32,
                           decoration: BoxDecoration(
-                              color: AppColors.purple500,
-                              borderRadius: BorderRadius.circular(8)),
+                            color: AppColors.purple500,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: Icon(
                             isStudent ? Icons.school : Icons.home,
-                            color: Colors.white, size: 16),
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const Text('You are verified,',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700,
-                          color: AppColors.neutral900, fontFamily: 'Sora')),
-                  Text('${widget.firstName} 🎉',
-                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700,
-                          color: AppColors.purple500, fontFamily: 'Sora')),
+                  const Text(
+                    'You are verified,',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.neutral900,
+                      fontFamily: 'Sora',
+                    ),
+                  ),
+                  Text(
+                    '${widget.firstName} 🎉',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.purple500,
+                      fontFamily: 'Sora',
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  Text('Your status as ${isStudent ? "a student" : "a landlord"} has been confirmed.',
-                      style: const TextStyle(fontSize: 14, color: AppColors.neutral600,
-                          fontFamily: 'Sora')),
-                  const Text('Welcome to Roomora.',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
-                          color: AppColors.neutral900, fontFamily: 'Sora')),
+                  Text(
+                    'Your status as ${isStudent ? "a student" : "a landlord"} has been confirmed.',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.neutral600,
+                      fontFamily: 'Sora',
+                    ),
+                  ),
+                  const Text(
+                    'Welcome to Roomora.',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.neutral900,
+                      fontFamily: 'Sora',
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -124,45 +200,77 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.neutral300),
-                      boxShadow: [BoxShadow(
+                      boxShadow: [
+                        BoxShadow(
                           color: Colors.black.withOpacity(0.06),
-                          blurRadius: 12, offset: const Offset(0, 4))],
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('UNLOCKED FOR YOU',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
-                                color: AppColors.neutral500, letterSpacing: 0.8,
-                                fontFamily: 'Sora')),
+                        const Text(
+                          'UNLOCKED FOR YOU',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.neutral500,
+                            letterSpacing: 0.8,
+                            fontFamily: 'Sora',
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         ...perks.map((p) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(children: [
-                            Container(width: 40, height: 40,
-                              decoration: BoxDecoration(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
                                   color: p['bg'] as Color,
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: Icon(p['icon'] as IconData,
-                                  color: p['color'] as Color, size: 18)),
-                            const SizedBox(width: 12),
-                            Expanded(child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(p['title'] as String,
-                                    style: const TextStyle(fontSize: 13,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  p['icon'] as IconData,
+                                  color: p['color'] as Color,
+                                  size: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      p['title'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: AppColors.neutral900,
-                                        fontFamily: 'Sora')),
-                                Text(p['sub'] as String,
-                                    style: const TextStyle(fontSize: 11,
+                                        fontFamily: 'Sora',
+                                      ),
+                                    ),
+                                    Text(
+                                      p['sub'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 11,
                                         color: AppColors.neutral600,
-                                        fontFamily: 'Sora')),
-                              ],
-                            )),
-                            const Icon(Icons.check_circle,
-                                color: ExtraAppColors.green400, size: 20),
-                          ]),
+                                        fontFamily: 'Sora',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.check_circle,
+                                color: ExtraAppColors.green400,
+                                size: 20,
+                              ),
+                            ],
+                          ),
                         )),
                       ],
                     ),
@@ -176,13 +284,17 @@ class _OnboardingCompleteViewState extends State<OnboardingCompleteView>
                         backgroundColor: AppColors.purple500,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       child: Text(
                         isStudent ? 'Find a roommate  →' : 'Publish listing  →',
-                        style: const TextStyle(color: Colors.white,
-                            fontSize: 16, fontWeight: FontWeight.w600,
-                            fontFamily: 'Sora'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Sora',
+                        ),
                       ),
                     ),
                   ),

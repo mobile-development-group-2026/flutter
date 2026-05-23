@@ -32,14 +32,13 @@ class VerifyEmailView extends StatefulWidget {
 class _VerifyEmailViewState extends State<VerifyEmailView> {
   final _vm = VerifyEmailViewModel();
 
-  // 6 controllers + focus nodes, uno por caja
   final List<TextEditingController> _controllers =
       List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   late Timer _timer;
   int _secondsLeft = 600;
-  bool _codeSent = false; 
+  bool _codeSent = false;
 
   String get _timerLabel {
     final m = (_secondsLeft ~/ 60).toString().padLeft(1, '0');
@@ -101,15 +100,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
 
     if (!mounted) return;
 
-  //   if (ok) {
-  //     Navigator.of(context).pushAndRemoveUntil(
-  //       MaterialPageRoute(builder: (_) => const OnboardingView()),
-  //       (route) => route.isFirst,
-  //     );
-  //   }
-  // }
-
-  if (ok) {
+    if (ok) {
       if (widget.role.toLowerCase() == 'landlord') {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const LandlordProfilePage()),
@@ -123,6 +114,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
       }
     }
   }
+
   Future<void> _resendCode() async {
     if (_secondsLeft > 540) return;
 
@@ -133,7 +125,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
     _timer.cancel();
     _startTimer();
 
-    // Mostrar snackbar "Code resent"
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
@@ -208,11 +199,9 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                 children: [
                   const SizedBox(height: 16),
 
-                  // ── Ilustración de sobre
                   _EmailIllustration(),
                   const SizedBox(height: 28),
 
-                  // ── Título
                   RichText(
                     textAlign: TextAlign.center,
                     text: const TextSpan(
@@ -231,7 +220,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                   ),
                   const SizedBox(height: 12),
 
-                  // ── Email badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 8),
@@ -274,7 +262,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                   ),
                   const SizedBox(height: 12),
 
-                  // ── Subtítulo
                   RichText(
                     textAlign: TextAlign.center,
                     text: const TextSpan(
@@ -294,7 +281,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                   ),
                   const SizedBox(height: 28),
 
-                  // ── Label del campo
                   const Text(
                     'ENTER YOUR CODE',
                     style: TextStyle(
@@ -306,7 +292,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                   ),
                   const SizedBox(height: 12),
 
-                  // ── 6 cajas de código
                   _CodeBoxes(
                     controllers: _controllers,
                     focusNodes: _focusNodes,
@@ -316,7 +301,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ── Error
                   if (_vm.errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -341,7 +325,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                     const SizedBox(height: 12),
                   ],
 
-                  // ── Didn't get it? Resend + countdown
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -390,7 +373,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
 
                   const Spacer(),
 
-                  // ── Botón principal
                   _vm.isLoading
                       ? const Center(
                           child: CircularProgressIndicator(
@@ -401,7 +383,6 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                         ),
                   const SizedBox(height: 12),
 
-                  // ── Links de ayuda
                   Column(
                     children: [
                       const Text(
@@ -508,7 +489,6 @@ class _CodeBoxes extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                 ),
                 onChanged: (v) {
-                  // Si pegan 6 dígitos de una, distribuirlos
                   if (v.length > 1) {
                     final digits = v.replaceAll(RegExp(r'\D'), '');
                     for (int j = 0; j < 6 && j < digits.length; j++) {
@@ -537,7 +517,6 @@ class _EmailIllustration extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Fondo difuminado
           Container(
             width: 120,
             height: 100,
@@ -546,7 +525,6 @@ class _EmailIllustration extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
             ),
           ),
-          // Sobre
           Container(
             width: 80,
             height: 60,
@@ -564,7 +542,6 @@ class _EmailIllustration extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Líneas de "texto" en el sobre
                 Container(height: 4, width: 48,
                     decoration: BoxDecoration(
                         color: AppColors.neutral300,
@@ -582,7 +559,6 @@ class _EmailIllustration extends StatelessWidget {
               ],
             ),
           ),
-          // Check badge verde
           Positioned(
             right: 8,
             top: 4,
@@ -597,7 +573,6 @@ class _EmailIllustration extends StatelessWidget {
                   color: Colors.white, size: 16),
             ),
           ),
-          // Ícono de email dentro del sobre
           Positioned(
             left: 22,
             top: 22,

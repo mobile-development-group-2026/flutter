@@ -4,7 +4,6 @@ import '/../models/user_session.dart';
 import '/../models/landlord_profile.dart';
 import '/../services/api_service.dart';
 
-
 class BuildYourProfileViewModel extends ChangeNotifier {
   String bio = '';
   String university = '';
@@ -48,26 +47,25 @@ class BuildYourProfileViewModel extends ChangeNotifier {
   bool get canContinue => selectedHobbies.isNotEmpty;
 }
 
-
 enum HousingSituation {
   havePlace,
   needPlace;
 
   String get title => switch (this) {
-        HousingSituation.havePlace => 'Ya tengo un lugar',
-        HousingSituation.needPlace => 'Necesito un lugar',
+        HousingSituation.havePlace => 'I have a place',
+        HousingSituation.needPlace => 'I need a place',
       };
 
   String get subtitle => switch (this) {
-        HousingSituation.havePlace => 'Busco un roommate para compartir',
-        HousingSituation.needPlace => 'Busco donde vivir',
+        HousingSituation.havePlace => 'Looking for a roommate to share with',
+        HousingSituation.needPlace => 'Looking for a place to live',
       };
 
   String get description => switch (this) {
         HousingSituation.havePlace =>
-          'Mi depto está listo. Necesito encontrar a la persona correcta para compartirlo.',
+          'My apartment is ready. I need to find the right person to share it with.',
         HousingSituation.needPlace =>
-          'Busco un lugar cerca del campus que se adapte a mi presupuesto y estilo de vida.',
+          'Looking for a place near campus that fits my budget and lifestyle.',
       };
 
   String get icon => switch (this) {
@@ -86,7 +84,6 @@ class RoommateSituationViewModel extends ChangeNotifier {
 
   bool get canContinue => situation != null;
 }
-
 
 class RoommatePreferencesViewModel extends ChangeNotifier {
   int spotsAvailable = 1;
@@ -113,7 +110,6 @@ class RoommatePreferencesViewModel extends ChangeNotifier {
   void setCleanliness(int? v) { cleanliness = v; notifyListeners(); }
 }
 
-
 class ListingPreferencesViewModel extends ChangeNotifier {
   int? maxBudget = 850;
   String? propertyType;
@@ -127,17 +123,17 @@ class ListingPreferencesViewModel extends ChangeNotifier {
   static const List<int> leaseOptions = [3, 6, 12];
 
   static const List<Map<String, String>> propertyTypes = [
-    {'emoji': '🛋', 'label': 'Studio', 'sub': 'Espacio privado y compacto'},
-    {'emoji': '🚪', 'label': '1 Bedroom', 'sub': 'Dormitorio y sala separados'},
-    {'emoji': '🏠', 'label': 'Shared room', 'sub': 'Compartir costo con roommates'},
-    {'emoji': '🏢', 'label': 'Any', 'sub': 'Mostrar todo'},
+    {'emoji': '🛋', 'label': 'Studio', 'sub': 'Private and compact space'},
+    {'emoji': '🚪', 'label': '1 Bedroom', 'sub': 'Separate bedroom and living room'},
+    {'emoji': '🏠', 'label': 'Shared room', 'sub': 'Share costs with roommates'},
+    {'emoji': '🏢', 'label': 'Any', 'sub': 'Show everything'},
   ];
 
   static const List<Map<String, dynamic>> distanceOptions = [
     {'label': '≤ 500m', 'value': 0},
     {'label': '≤ 1 km', 'value': 1},
     {'label': '≤ 2 km', 'value': 2},
-    {'label': 'Cualquier', 'value': 3},
+    {'label': 'Any', 'value': 3},
   ];
 
   static const List<Map<String, String>> amenities = [
@@ -147,9 +143,9 @@ class ListingPreferencesViewModel extends ChangeNotifier {
   ];
 
   static const List<Map<String, String>> preferences = [
-    {'emoji': '🚭', 'label': 'Smoke-free', 'sub': 'Solo unidades sin fumadores'},
-    {'emoji': '🎓', 'label': 'Students only', 'sub': 'Estudiantes verificados como inquilinos'},
-    {'emoji': '📸', 'label': 'Photos required', 'sub': 'Solo listings con fotos'},
+    {'emoji': '🚭', 'label': 'Smoke-free', 'sub': 'Non-smoking units only'},
+    {'emoji': '🎓', 'label': 'Students only', 'sub': 'Verified students as tenants'},
+    {'emoji': '📸', 'label': 'Photos required', 'sub': 'Only listings with photos'},
   ];
 
   void setMaxBudget(int v) { maxBudget = v; notifyListeners(); }
@@ -166,7 +162,6 @@ class ListingPreferencesViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
-
 
 class NewListingViewModel extends ChangeNotifier {
   String title = '';
@@ -251,7 +246,7 @@ class OnboardingViewModel extends ChangeNotifier {
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt;
     if (token == null) {
-      errorMessage = 'No se pudo obtener el token de sesión';
+      errorMessage = 'Failed to get session token';
       isLoading = false;
       notifyListeners();
       return;
@@ -281,7 +276,7 @@ class OnboardingViewModel extends ChangeNotifier {
     final tokenObj = await auth.sessionToken();
     final token = tokenObj?.jwt;
     if (token == null) {
-      errorMessage = 'No se pudo obtener el token de sesión';
+      errorMessage = 'Failed to get session token';
       isLoading = false;
       notifyListeners();
       return;
@@ -320,7 +315,6 @@ class OnboardingViewModel extends ChangeNotifier {
   void finishOnboarding(UserSession session) {
     if (completedProfile != null) session.setLoaded(completedProfile!);
   }
-
 
   Future<void> _saveLandlordProfile(String token) async {
     final bp = buildProfile;
@@ -428,7 +422,6 @@ class OnboardingViewModel extends ChangeNotifier {
       debugPrint('[Onboarding] saveNewListing failed: $e');
     }
   }
-
 
   List<String> _cleanHobbies(List<String> items) => items
       .map((h) => h.replaceAll(RegExp(r'^[^\w\s]+\s*'), '').trim())

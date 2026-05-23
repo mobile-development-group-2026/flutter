@@ -3,8 +3,6 @@ import 'package:clerk_flutter/clerk_flutter.dart';
 import '../models/landlord_profile.dart';
 import '../services/api_service.dart';
 
-
-
 class UserSession extends ChangeNotifier {
   LandlordProfile? profile;
   bool isLoaded = false;
@@ -70,7 +68,7 @@ class UserSession extends ChangeNotifier {
   Future<String?> getTokenFromAuth(ClerkAuthState auth) async {
     try {
       final sessionToken = await auth.sessionToken();
-      return sessionToken?.jwt; 
+      return sessionToken?.jwt;
     } catch (_) {
       return null;
     }

@@ -8,15 +8,17 @@ class ConnectivityService {
     _setupListeners();
     _initConnectivity();
   }
-  Future<void> _initConnectivity() async {
-    _isConnected = await checkConnection();
-  }
+
   final Connectivity _connectivity = Connectivity();
   final _controller = StreamController<bool>.broadcast();
   Stream<bool> get onConnectivityChanged => _controller.stream;
 
   bool _isConnected = true;
   bool get isConnected => _isConnected;
+
+  Future<void> _initConnectivity() async {
+    _isConnected = await checkConnection();
+  }
 
   void _setupListeners() {
     _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {

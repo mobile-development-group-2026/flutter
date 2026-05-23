@@ -15,7 +15,7 @@ class LandingView extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1C1040), // purple900
+              Color(0xFF1C1040),
               Color(0xFF2A1860),
               Color(0xFF3B2280),
               Color(0xFF2A1860),
@@ -26,7 +26,6 @@ class LandingView extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Glow superior
             Positioned(
               top: -80,
               left: MediaQuery.of(context).size.width / 2 - 180,
@@ -44,7 +43,6 @@ class LandingView extends StatelessWidget {
                 ),
               ),
             ),
-            // Glow inferior
             Positioned(
               bottom: 100,
               left: MediaQuery.of(context).size.width / 2 - 150,
@@ -62,7 +60,6 @@ class LandingView extends StatelessWidget {
                 ),
               ),
             ),
-            // Contenido principal
             SafeArea(
               child: Column(
                 children: [
@@ -109,7 +106,6 @@ class LandingView extends StatelessWidget {
 
                   const Spacer(flex: 2),
 
-                  // Headline
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 32),
                     child: Column(
@@ -157,7 +153,6 @@ class LandingView extends StatelessWidget {
                   ),
                   const SizedBox(height: 28),
 
-                  // Feature chips
                   Wrap(
                     alignment: WrapAlignment.center,
                     spacing: 10,
@@ -180,7 +175,6 @@ class LandingView extends StatelessWidget {
 
                   const Spacer(flex: 3),
 
-                  // Botones
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
